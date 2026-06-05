@@ -1,6 +1,6 @@
 # AutoML4R
 
-AutoML4R packages the `auto_ml_analysis()` workflow from `自动机器学习4.0.R` as an installable R package.
+AutoML4R packages a cleaned and testable `auto_ml_analysis()` workflow from `自动机器学习4.0.R` as an installable R package.
 
 ## Installation
 
@@ -19,11 +19,27 @@ library(AutoML4R)
 result <- auto_ml_analysis(
   hub_data = hub_data,
   group = group,
-  output_dir = "ML_screening_results"
+  positive_class = "Disease",
+  output_dir = "ML_screening_results",
+  methods = c("univariate", "roc_auc", "lasso", "ridge", "elastic_net", "random_forest", "boruta", "xgboost"),
+  top_n = 20
 )
 ```
 
-`hub_data` should be a data frame or matrix with samples in rows and features in columns. `group` should contain one class label per sample.
+`hub_data` should be a data frame or matrix with samples in rows and features in columns. `group` should contain one binary class label per sample.
+
+The workflow writes:
+
+- `feature_rankings_by_method.csv`
+- `consensus_feature_votes.csv`
+- one selected-gene TXT file per method
+- consensus vote and method-support figures
+
+For a runnable simulated-data test:
+
+```sh
+Rscript inst/examples/smoke_test.R
+```
 
 ## GitHub Upload
 

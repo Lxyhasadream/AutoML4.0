@@ -4,3 +4,4 @@
 *.tar.gz
 *.Rcheck
 ML_screening_results/
+ML_screening_results_smoke_test/
