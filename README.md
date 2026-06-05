@@ -1,4 +1,4 @@
-# AutoML4R
+# AutoML4.0
 
 AutoML4R packages a cleaned and testable `auto_ml_analysis()` workflow from `自动机器学习4.0.R` as an installable R package.
 
@@ -6,7 +6,7 @@ AutoML4R packages a cleaned and testable `auto_ml_analysis()` workflow from `自
 
 ```r
 # install.packages("remotes")
-remotes::install_github("YOUR_GITHUB_USERNAME/AutoML4R")
+remotes::install_github("Lxyhasadream/AutoML4.0")
 ```
 
 Some modelling backends are optional runtime dependencies and may require special installation steps, especially `catboost` and `lightgbm`.
