@@ -1,7 +1,8 @@
-if (requireNamespace("AutoML4R", quietly = TRUE)) {
-  library(AutoML4R)
-} else {
+if (file.exists("R/auto_ml_analysis.R") && file.exists("R/plots.R")) {
   source("R/auto_ml_analysis.R")
+  source("R/plots.R")
+} else {
+  library(AutoML4R)
 }
 
 set.seed(2026)

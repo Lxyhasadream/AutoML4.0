@@ -3,3 +3,7 @@
 ^\.codex$
 ^\.git$
 ^catboost_info$
+^run_full_test\.R$
+^ML_screening_results
+^AutoML4R.*\.Rcheck$
+^AutoML4R_.*\.tar\.gz$

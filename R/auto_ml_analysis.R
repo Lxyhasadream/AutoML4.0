@@ -90,6 +90,7 @@ auto_ml_analysis <- function(hub_data,
     utils::write.csv(rankings, file.path(output_dir, "feature_rankings_by_method.csv"), row.names = FALSE)
     utils::write.csv(consensus, file.path(output_dir, "consensus_feature_votes.csv"), row.names = FALSE)
     aml_write_selected_genes(results, output_dir)
+    aml_plot_algorithm_panels(results, output_dir, top_n)
     aml_plot_consensus(consensus, output_dir, top_n)
     aml_plot_method_heatmap(results, output_dir, top_n)
   }
@@ -99,6 +100,7 @@ auto_ml_analysis <- function(hub_data,
       selected_genes = lapply(results, function(z) z$selected),
       rankings = rankings,
       consensus = consensus,
+      method_results = results,
       failures = failures,
       positive_class = positive_class,
       output_dir = if (write_outputs) normalizePath(output_dir, mustWork = FALSE) else NA_character_
@@ -235,6 +237,7 @@ aml_run_univariate <- function(x, y, top_n) {
   }, numeric(1))
   ranked <- aml_rank_df("univariate", names(scores), scores)
   ranked$selected <- head(ranked$rankings$feature, top_n)
+  ranked$details <- list(test = "wilcox")
   ranked
 }
 
@@ -252,6 +255,7 @@ aml_run_roc_auc <- function(x, y01, top_n) {
   }, numeric(1))
   ranked <- aml_rank_df("roc_auc", names(scores), scores)
   ranked$selected <- head(ranked$rankings$feature, top_n)
+  ranked$details <- list(metric = "absolute_auc")
   ranked
 }
 
@@ -279,6 +283,7 @@ aml_run_glmnet <- function(x, y, alpha, top_n, seed) {
     selected <- head(ranked$rankings$feature, top_n)
   }
   ranked$selected <- head(selected, top_n)
+  ranked$details <- list(cv = cv, alpha = alpha)
   ranked
 }
 
@@ -291,6 +296,7 @@ aml_run_random_forest <- function(x, y, top_n, seed) {
   names(score) <- rownames(imp)
   ranked <- aml_rank_df("random_forest", names(score), score)
   ranked$selected <- head(ranked$rankings$feature, top_n)
+  ranked$details <- list(model = fit)
   ranked
 }
 
@@ -309,6 +315,7 @@ aml_run_ranger <- function(x, y, top_n, seed) {
   score <- fit$variable.importance
   ranked <- aml_rank_df("ranger", names(score), score)
   ranked$selected <- head(ranked$rankings$feature, top_n)
+  ranked$details <- list(model = fit)
   ranked
 }
 
@@ -328,6 +335,7 @@ aml_run_boruta <- function(x, y, top_n, seed) {
   ranked <- aml_rank_df("boruta", names(score), score)
   ranked$rankings$decision <- stats[ranked$rankings$feature, "decision"]
   ranked$selected <- head(selected, top_n)
+  ranked$details <- list(model = fit, fixed_model = fixed, stats = stats)
   ranked
 }
 
@@ -354,6 +362,7 @@ aml_run_vsurf <- function(x, y, top_n, seed, stage = c("interpretation", "predic
   score[selected] <- rev(seq_along(selected))
   ranked <- aml_rank_df(paste0("vsurf_", stage), names(score), score)
   ranked$selected <- head(selected, top_n)
+  ranked$details <- list(model = fit, stage = stage)
   ranked
 }
 
@@ -377,6 +386,7 @@ aml_run_xgboost <- function(x, y01, top_n, seed) {
   }
   ranked <- aml_rank_df("xgboost", imp$Feature, imp$Gain)
   ranked$selected <- head(ranked$rankings$feature, top_n)
+  ranked$details <- list(model = fit, importance = imp)
   ranked
 }
 
@@ -402,10 +412,12 @@ aml_run_lightgbm <- function(x, y01, top_n, seed) {
     score <- aml_univariate_auc_score(x, factor(y01, levels = c(0, 1)))
     ranked <- aml_rank_df("lightgbm", names(score), score)
     ranked$selected <- head(ranked$rankings$feature, top_n)
+    ranked$details <- list(model = fit, x = x, y01 = y01, fallback = TRUE)
     return(ranked)
   }
   ranked <- aml_rank_df("lightgbm", imp$Feature, imp$Gain)
   ranked$selected <- head(ranked$rankings$feature, top_n)
+  ranked$details <- list(model = fit, importance = imp, x = x, y01 = y01, fallback = FALSE)
   ranked
 }
 
@@ -428,6 +440,7 @@ aml_run_catboost <- function(x, y01, top_n, seed) {
   names(score) <- colnames(x)
   ranked <- aml_rank_df("catboost", names(score), score)
   ranked$selected <- head(ranked$rankings$feature, top_n)
+  ranked$details <- list(model = fit, pool = pool)
   ranked
 }
 
@@ -447,6 +460,7 @@ aml_run_mrmr <- function(x, y01, top_n) {
   score[selected] <- rev(seq_along(selected))
   ranked <- aml_rank_df("mrmr", names(score), score)
   ranked$selected <- head(selected, top_n)
+  ranked$details <- list(model = fit)
   ranked
 }
 
@@ -463,6 +477,7 @@ aml_run_splsda <- function(x, y, top_n, seed) {
   score <- abs(loadings[, 1])
   ranked <- aml_rank_df("splsda", feature, score)
   ranked$selected <- head(ranked$rankings$feature, top_n)
+  ranked$details <- list(model = fit, loadings = loadings)
   ranked
 }
 
@@ -495,6 +510,7 @@ aml_run_pam <- function(x, y, top_n, seed) {
   }
   ranked <- aml_rank_df("pam", names(score), score)
   ranked$selected <- head(selected, top_n)
+  ranked$details <- list(model = fit, threshold = thresh, genes = genes)
   ranked
 }
 
@@ -515,6 +531,7 @@ aml_run_svm <- function(x, y, top_n, seed) {
   score <- rowMeans(imp, na.rm = TRUE)
   ranked <- aml_rank_df("svm", names(score), score)
   ranked$selected <- head(ranked$rankings$feature, top_n)
+  ranked$details <- list(model = fit)
   ranked
 }
 
@@ -539,6 +556,7 @@ aml_run_svm_rfe <- function(x, y, top_n, seed) {
   score[selected] <- rev(seq_along(selected))
   ranked <- aml_rank_df("svm_rfe", names(score), score)
   ranked$selected <- head(selected, top_n)
+  ranked$details <- list(model = fit)
   ranked
 }
 
@@ -575,6 +593,7 @@ aml_run_stability_selection <- function(x, y01, top_n, seed) {
   }
   ranked <- aml_rank_df("stability_selection", names(score), score)
   ranked$selected <- head(selected, top_n)
+  ranked$details <- list(selection_frequency = score, n_resamples = B)
   ranked
 }
 
@@ -585,6 +604,7 @@ aml_run_relief_family <- function(x, y, top_n, method = "ReliefFequalK") {
   score <- CORElearn::attrEval(form, data = df, estimator = method)
   ranked <- aml_rank_df("relief", names(score), score)
   ranked$selected <- head(ranked$rankings$feature, top_n)
+  ranked$details <- list(estimator = method)
   ranked
 }
 
@@ -601,6 +621,7 @@ aml_run_fselector <- function(x, y, top_n, method) {
     ranked <- aml_rank_df(method, names(score), score)
   }
   ranked$selected <- head(ranked$rankings$feature, top_n)
+  ranked$details <- list(metric = method)
   ranked
 }
 
@@ -613,6 +634,7 @@ aml_run_ga <- function(x, y, top_n, seed) {
   score[selected] <- rev(seq_along(selected))
   ranked <- aml_rank_df("genetic_algorithm", names(score), score)
   ranked$selected <- head(selected, top_n)
+  ranked$details <- list(search = "stochastic_genetic_style", base_score = base_score)
   ranked
 }
 
@@ -625,6 +647,7 @@ aml_run_sa <- function(x, y, top_n, seed) {
   score[selected] <- rev(seq_along(selected))
   ranked <- aml_rank_df("simulated_annealing", names(score), score)
   ranked$selected <- head(selected, top_n)
+  ranked$details <- list(search = "simulated_annealing_style", base_score = base_score)
   ranked
 }
 

@@ -34,6 +34,9 @@ The workflow writes:
 - `consensus_feature_votes.csv`
 - one selected-gene TXT file per method
 - consensus vote and method-support figures
+- per-algorithm plots under `algorithm_plots/`, including ranking plots,
+  glmnet CV/path plots, random-forest OOB/importance plots, Boruta history
+  plots, boosting importance plots, and LightGBM SHAP summaries
 
 Default methods currently include 25 feature-selection algorithms or algorithm variants:
 

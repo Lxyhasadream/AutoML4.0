@@ -6,4 +6,5 @@
 ML_screening_results/
 ML_screening_results_smoke_test/
 ML_screening_results_full_methods_test/
+ML_screening_results_user_test/
 catboost_info/

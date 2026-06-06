@@ -1,1 +1,13 @@
-utils::globalVariables(c("feature", "method", "n_methods", "selected"))
+utils::globalVariables(c(
+  ".data",
+  "Variables",
+  "expression",
+  "feature",
+  "index",
+  "method",
+  "n_methods",
+  "score",
+  "selected",
+  "shap_value",
+  "threshold"
+))
