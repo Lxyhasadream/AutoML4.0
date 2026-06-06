@@ -1,4 +1,9 @@
-aml_plot_algorithm_panels <- function(results, output_dir, top_n = 20) {
+aml_plot_algorithm_panels <- function(results,
+                                      output_dir,
+                                      top_n = 20,
+                                      x = NULL,
+                                      y = NULL,
+                                      positive_class = NULL) {
   plot_dir <- file.path(output_dir, "algorithm_plots")
   dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -8,8 +13,38 @@ aml_plot_algorithm_panels <- function(results, output_dir, top_n = 20) {
     dir.create(method_dir, showWarnings = FALSE, recursive = TRUE)
 
     try(aml_plot_ranking_bar(res, method_dir, top_n), silent = TRUE)
+    try(aml_plot_selected_gene_scores(res, method_dir, top_n), silent = TRUE)
+    try(aml_plot_selected_gene_expression(res, method_dir, x, y, top_n, positive_class), silent = TRUE)
     try(aml_plot_special_method(method, res, method_dir, top_n), silent = TRUE)
   }
+}
+
+aml_method_label <- function(method) {
+  words <- strsplit(gsub("_", " ", method), " ", fixed = TRUE)[[1]]
+  paste(toupper(substr(words, 1, 1)), substr(words, 2, nchar(words)), sep = "", collapse = " ")
+}
+
+aml_plot_palette <- function() {
+  c("#2A6F97", "#F28E2B", "#4E79A7", "#59A14F", "#E15759", "#B07AA1", "#76B7B2")
+}
+
+aml_publication_theme <- function(base_size = 13) {
+  aml_need_package("ggplot2")
+  ggplot2::theme_minimal(base_size = base_size) +
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(face = "bold", color = "#1F2933", margin = ggplot2::margin(b = 6)),
+      plot.subtitle = ggplot2::element_text(color = "#52616B", margin = ggplot2::margin(b = 12)),
+      axis.title = ggplot2::element_text(color = "#1F2933"),
+      axis.text = ggplot2::element_text(color = "#334E68"),
+      panel.grid.major.y = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank(),
+      legend.position = "top",
+      legend.title = ggplot2::element_blank(),
+      strip.text = ggplot2::element_text(face = "bold", color = "#1F2933"),
+      strip.background = ggplot2::element_rect(fill = "#F4F7F9", color = NA),
+      plot.background = ggplot2::element_rect(fill = "white", color = NA),
+      panel.background = ggplot2::element_rect(fill = "white", color = NA)
+    )
 }
 
 aml_plot_ranking_bar <- function(res, method_dir, top_n) {
@@ -22,14 +57,98 @@ aml_plot_ranking_bar <- function(res, method_dir, top_n) {
   }
   df$feature <- factor(df$feature, levels = rev(df$feature))
   p <- ggplot2::ggplot(df, ggplot2::aes(x = score, y = feature)) +
-    ggplot2::geom_col(fill = "#2C7FB8", width = 0.72) +
-    ggplot2::theme_classic(base_size = 13) +
+    ggplot2::geom_col(fill = "#2A6F97", width = 0.68) +
+    ggplot2::geom_text(ggplot2::aes(label = rank), x = 0, hjust = -0.35, color = "white", size = 3.2) +
+    aml_publication_theme(base_size = 13) +
     ggplot2::labs(
       x = "Feature score",
       y = NULL,
-      title = paste0(unique(df$method)[1], " feature ranking")
-    )
+      title = paste0(aml_method_label(unique(df$method)[1]), " feature ranking"),
+      subtitle = paste0("Top ", nrow(df), " ranked features")
+    ) +
+    ggplot2::coord_cartesian(clip = "off")
   aml_save_plot(p, file.path(method_dir, "feature_ranking_barplot"), 8, max(5, 0.28 * nrow(df) + 2))
+}
+
+aml_plot_selected_gene_scores <- function(res, method_dir, top_n) {
+  aml_need_package("ggplot2")
+  selected <- head(unique(as.character(res$selected)), top_n)
+  df <- res$rankings[res$rankings$feature %in% selected, , drop = FALSE]
+  df <- df[order(df$rank), , drop = FALSE]
+  if (nrow(df) == 0) {
+    return(invisible(NULL))
+  }
+  df$feature <- factor(df$feature, levels = rev(df$feature))
+  df$rank_label <- paste0("#", df$rank)
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = score, y = feature)) +
+    ggplot2::geom_segment(
+      ggplot2::aes(x = 0, xend = score, yend = feature),
+      linewidth = 1.1,
+      color = "#D5E4EE",
+      lineend = "round"
+    ) +
+    ggplot2::geom_point(size = 4.2, color = "#F28E2B") +
+    ggplot2::geom_text(ggplot2::aes(label = rank_label), hjust = -0.28, size = 3.3, color = "#1F2933") +
+    aml_publication_theme(base_size = 13) +
+    ggplot2::labs(
+      x = "Selection score",
+      y = NULL,
+      title = paste0(aml_method_label(unique(df$method)[1]), " selected genes"),
+      subtitle = "Selected genes ranked by algorithm-specific score"
+    ) +
+    ggplot2::coord_cartesian(clip = "off")
+  aml_save_plot(p, file.path(method_dir, "selected_gene_scores"), 8.5, max(5, 0.34 * nrow(df) + 2.2))
+}
+
+aml_plot_selected_gene_expression <- function(res, method_dir, x, y, top_n, positive_class = NULL) {
+  aml_need_package("ggplot2")
+  if (is.null(x) || is.null(y)) {
+    return(invisible(NULL))
+  }
+  x <- as.data.frame(x, check.names = FALSE)
+  selected <- head(intersect(unique(as.character(res$selected)), colnames(x)), min(top_n, 12))
+  if (length(selected) == 0) {
+    return(invisible(NULL))
+  }
+  y <- droplevels(as.factor(y))
+  feature_levels <- rev(selected)
+  plot_df <- do.call(rbind, lapply(selected, function(feature) {
+    data.frame(
+      feature = feature,
+      group = y,
+      expression = x[[feature]],
+      stringsAsFactors = FALSE
+    )
+  }))
+  plot_df$feature <- factor(plot_df$feature, levels = feature_levels)
+  plot_df$group <- factor(plot_df$group, levels = levels(y))
+
+  fill_values <- setNames(rep(aml_plot_palette(), length.out = nlevels(y)), levels(y))
+  if (!is.null(positive_class) && positive_class %in% names(fill_values)) {
+    fill_values[positive_class] <- "#F28E2B"
+  }
+
+  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = group, y = expression, fill = group, color = group)) +
+    ggplot2::geom_violin(width = 0.78, alpha = 0.18, linewidth = 0.25, trim = FALSE) +
+    ggplot2::geom_boxplot(width = 0.22, alpha = 0.72, outlier.shape = NA, linewidth = 0.35) +
+    ggplot2::geom_jitter(width = 0.12, alpha = 0.58, size = 1.35, stroke = 0) +
+    ggplot2::facet_wrap(stats::as.formula("~ feature"), scales = "free_y", ncol = 4) +
+    ggplot2::scale_fill_manual(values = fill_values) +
+    ggplot2::scale_color_manual(values = fill_values) +
+    aml_publication_theme(base_size = 12) +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 35, hjust = 1),
+      panel.grid.major.x = ggplot2::element_blank()
+    ) +
+    ggplot2::labs(
+      x = NULL,
+      y = "Expression",
+      title = paste0(aml_method_label(unique(res$rankings$method)[1]), " selected-gene expression"),
+      subtitle = paste0("Top ", length(selected), " selected genes across phenotype groups")
+    )
+
+  height <- max(5.5, 2.2 * ceiling(length(selected) / 4))
+  aml_save_plot(p, file.path(method_dir, "selected_gene_expression"), 11, height)
 }
 
 aml_plot_special_method <- function(method, res, method_dir, top_n) {

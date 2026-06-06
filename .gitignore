@@ -7,4 +7,8 @@ ML_screening_results/
 ML_screening_results_smoke_test/
 ML_screening_results_full_methods_test/
 ML_screening_results_user_test/
+ML_screening_results_local_test/
+ML_screening_results_installed_full_test/
+ML_screening_results_source_full_plot_test/
+ML_screening_results_beautiful_plot_module_test/
 catboost_info/

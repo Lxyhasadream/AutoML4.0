@@ -90,7 +90,7 @@ auto_ml_analysis <- function(hub_data,
     utils::write.csv(rankings, file.path(output_dir, "feature_rankings_by_method.csv"), row.names = FALSE)
     utils::write.csv(consensus, file.path(output_dir, "consensus_feature_votes.csv"), row.names = FALSE)
     aml_write_selected_genes(results, output_dir)
-    aml_plot_algorithm_panels(results, output_dir, top_n)
+    aml_plot_algorithm_panels(results, output_dir, top_n, x = x, y = y, positive_class = positive_class)
     aml_plot_consensus(consensus, output_dir, top_n)
     aml_plot_method_heatmap(results, output_dir, top_n)
   }
