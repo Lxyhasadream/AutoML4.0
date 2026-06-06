@@ -173,7 +173,8 @@ The one-click STRING PPI workflow writes:
 - `STRING_offline_edge_df_for_cytohubba.csv`
 - `STRING_PPI_top<n>_intersection_all_11_methods.csv`
 - `STRING_PPI_consensus_hub_genes.csv`
-- all downstream 11-method PPI tables and figures from `auto_ppi_analysis()`
+- all downstream 11-method PPI tables and figures from `auto_ppi_analysis()`,
+  including `PPI_top<n>_intersection_all_11_methods.csv`
 
 The lower-level entry point is `auto_ppi_analysis()`. Use it only when you
 already have a PPI edge table:
@@ -186,6 +187,9 @@ hub_result <- auto_ppi_analysis(
   output_dir = "PPI_screening_results",
   top_n = 10
 )
+
+# Strict intersection of top-10 nodes across all 11 PPI algorithms
+hub_result$downstream_genes
 ```
 
 `ppi_edges` should contain one PPI edge per row. The network is treated as an

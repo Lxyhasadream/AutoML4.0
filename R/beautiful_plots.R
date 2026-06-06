@@ -16,14 +16,6 @@ automl4r_require_plot_pkgs <- function() {
       call. = FALSE
     )
   }
-  suppressPackageStartupMessages({
-    library(dplyr)
-    library(ggplot2)
-    library(stringr)
-    library(scales)
-    library(patchwork)
-    library(grid)
-  })
   invisible(TRUE)
 }
 
@@ -304,13 +296,13 @@ automl4r_plot_lasso_optimized <- function(result, output_dir) {
     Gene = rownames(coef_mat_min),
     Coefficient = as.numeric(coef_mat_min[, 1]),
     stringsAsFactors = FALSE
-  ) %>%
-    dplyr::filter(Gene != "(Intercept)") %>%
-    dplyr::mutate(AbsCoefficient = abs(Coefficient)) %>%
+  ) |>
+    dplyr::filter(Gene != "(Intercept)") |>
+    dplyr::mutate(AbsCoefficient = abs(Coefficient)) |>
     dplyr::arrange(dplyr::desc(AbsCoefficient))
 
-  lasso_selected_df <- lasso_coef_df %>%
-    dplyr::filter(Coefficient != 0) %>%
+  lasso_selected_df <- lasso_coef_df |>
+    dplyr::filter(Coefficient != 0) |>
     dplyr::arrange(dplyr::desc(AbsCoefficient))
 
   lasso_genes <- lasso_selected_df$Gene
@@ -377,7 +369,7 @@ automl4r_plot_lasso_optimized <- function(result, output_dir) {
     cvm = cvfit_lasso$cvm,
     cvsd = cvfit_lasso$cvsd,
     nzero = cvfit_lasso$nzero
-  ) %>%
+  ) |>
     dplyr::mutate(ymin = cvm - cvsd, ymax = cvm + cvsd)
 
   cv_y_max <- max(cv_df$ymax, na.rm = TRUE)
@@ -500,12 +492,12 @@ automl4r_plot_glmnet_optimized <- function(result, output_dir, method) {
     Gene = rownames(coef_min),
     Coefficient = as.numeric(coef_min[, 1]),
     stringsAsFactors = FALSE
-  ) %>%
-    dplyr::filter(Gene != "(Intercept)") %>%
-    dplyr::mutate(AbsCoefficient = abs(Coefficient)) %>%
+  ) |>
+    dplyr::filter(Gene != "(Intercept)") |>
+    dplyr::mutate(AbsCoefficient = abs(Coefficient)) |>
     dplyr::arrange(dplyr::desc(AbsCoefficient))
-  selected_df <- coef_df %>%
-    dplyr::filter(Coefficient != 0) %>%
+  selected_df <- coef_df |>
+    dplyr::filter(Coefficient != 0) |>
     dplyr::arrange(dplyr::desc(AbsCoefficient))
   if (nrow(selected_df) == 0) {
     selected_df <- head(coef_df, min(30, nrow(coef_df)))
@@ -557,7 +549,7 @@ automl4r_plot_glmnet_optimized <- function(result, output_dir, method) {
     cvm = cvfit$cvm,
     cvsd = cvfit$cvsd,
     stringsAsFactors = FALSE
-  ) %>% dplyr::mutate(ymin = cvm - cvsd, ymax = cvm + cvsd)
+  ) |> dplyr::mutate(ymin = cvm - cvsd, ymax = cvm + cvsd)
   cv_y_max <- max(cv_df$ymax, na.rm = TRUE)
   cv_y_min <- min(cv_df$ymin, na.rm = TRUE)
   cv_y_range <- cv_y_max - cv_y_min
@@ -621,8 +613,8 @@ automl4r_plot_random_forest_optimized <- function(result, output_dir) {
   method_dir <- file.path(output_dir, "NatureStyle_algorithm_selected_gene_plots", "random_forest")
   dir.create(method_dir, recursive = TRUE, showWarnings = FALSE)
 
-  rf_data_plot <- res$rankings %>%
-    dplyr::mutate(relative_imp = score / max(score, na.rm = TRUE), ID = feature) %>%
+  rf_data_plot <- res$rankings |>
+    dplyr::mutate(relative_imp = score / max(score, na.rm = TRUE), ID = feature) |>
     dplyr::arrange(relative_imp)
   rf_data_plot$ID <- factor(rf_data_plot$ID, levels = rf_data_plot$ID)
   importance_cutoff <- 0.5
@@ -753,28 +745,28 @@ automl4r_plot_consensus_nature <- function(all_genes,
     stop("No valid gene records were extracted from all_genes.", call. = FALSE)
   }
 
-  vote_long <- vote_long %>%
-    dplyr::filter(!is.na(method), method != "", !is.na(gene), gene != "", gene != "NA", gene != "NULL") %>%
+  vote_long <- vote_long |>
+    dplyr::filter(!is.na(method), method != "", !is.na(gene), gene != "", gene != "NA", gene != "NULL") |>
     dplyr::distinct(method, gene)
 
   n_methods_total <- dplyr::n_distinct(vote_long$method)
   utils::write.csv(vote_long, file.path(output_dir, "All_methods_gene_long_table.csv"), row.names = FALSE)
 
-  vote_table <- vote_long %>%
-    dplyr::group_by(gene) %>%
+  vote_table <- vote_long |>
+    dplyr::group_by(gene) |>
     dplyr::summarise(
       n_methods = dplyr::n_distinct(method),
       support_rate = n_methods / n_methods_total,
       methods = paste(sort(unique(method)), collapse = "; "),
       .groups = "drop"
-    ) %>%
+    ) |>
     dplyr::arrange(dplyr::desc(n_methods), gene)
 
   utils::write.csv(vote_table, file.path(output_dir, "Consensus_gene_vote_table.csv"), row.names = FALSE)
 
   min_support_methods <- min(n_methods_total, max(3, ceiling(min_support_fraction * n_methods_total)))
-  consensus_genes <- vote_table %>%
-    dplyr::filter(n_methods >= min_support_methods) %>%
+  consensus_genes <- vote_table |>
+    dplyr::filter(n_methods >= min_support_methods) |>
     dplyr::pull(gene)
   utils::write.table(
     data.frame(Genes = consensus_genes),
@@ -785,8 +777,8 @@ automl4r_plot_consensus_nature <- function(all_genes,
     sep = "\t"
   )
 
-  method_info <- vote_long %>%
-    dplyr::distinct(method) %>%
+  method_info <- vote_long |>
+    dplyr::distinct(method) |>
     dplyr::mutate(method_class = automl4r_method_class(method))
   utils::write.csv(method_info, file.path(output_dir, "Feature_selection_method_class_annotation.csv"), row.names = FALSE)
 
@@ -819,11 +811,11 @@ automl4r_plot_consensus_nature <- function(all_genes,
     "Not selected" = "grey94"
   )
 
-  vote_plot_df <- vote_table %>%
-    dplyr::arrange(dplyr::desc(n_methods), gene) %>%
-    dplyr::slice_head(n = min(top_n_vote, nrow(vote_table))) %>%
-    dplyr::distinct(gene, .keep_all = TRUE) %>%
-    dplyr::arrange(n_methods, gene) %>%
+  vote_plot_df <- vote_table |>
+    dplyr::arrange(dplyr::desc(n_methods), gene) |>
+    dplyr::slice_head(n = min(top_n_vote, nrow(vote_table))) |>
+    dplyr::distinct(gene, .keep_all = TRUE) |>
+    dplyr::arrange(n_methods, gene) |>
     dplyr::mutate(gene = factor(gene, levels = gene))
 
   x_break_by <- max(1, ceiling(n_methods_total / 8))
@@ -864,41 +856,41 @@ automl4r_plot_consensus_nature <- function(all_genes,
       fill = ggplot2::guide_colorbar(title.position = "top", barwidth = grid::unit(0.45, "cm"), barheight = grid::unit(3.2, "cm"))
     )
 
-  method_count <- vote_long %>%
-    dplyr::count(method, name = "n_selected_genes") %>%
+  method_count <- vote_long |>
+    dplyr::count(method, name = "n_selected_genes") |>
     dplyr::left_join(method_info, by = "method")
   utils::write.csv(method_count, file.path(output_dir, "Algorithm_selected_gene_count_table.csv"), row.names = FALSE)
 
-  class_order <- method_count %>%
-    dplyr::group_by(method_class) %>%
+  class_order <- method_count |>
+    dplyr::group_by(method_class) |>
     dplyr::summarise(
       n_algorithms = dplyr::n_distinct(method),
       total_selected_genes = sum(n_selected_genes, na.rm = TRUE),
       mean_selected_genes = mean(n_selected_genes, na.rm = TRUE),
       .groups = "drop"
-    ) %>%
-    dplyr::arrange(dplyr::desc(n_algorithms), dplyr::desc(total_selected_genes), dplyr::desc(mean_selected_genes), method_class) %>%
+    ) |>
+    dplyr::arrange(dplyr::desc(n_algorithms), dplyr::desc(total_selected_genes), dplyr::desc(mean_selected_genes), method_class) |>
     dplyr::pull(method_class)
 
-  method_count <- method_count %>%
-    dplyr::mutate(method_class = factor(method_class, levels = class_order)) %>%
+  method_count <- method_count |>
+    dplyr::mutate(method_class = factor(method_class, levels = class_order)) |>
     dplyr::arrange(method_class, dplyr::desc(n_selected_genes), method)
   method_order <- method_count$method
 
-  heatmap_genes <- vote_table %>%
-    dplyr::arrange(dplyr::desc(n_methods), gene) %>%
+  heatmap_genes <- vote_table |>
+    dplyr::arrange(dplyr::desc(n_methods), gene) |>
     dplyr::pull(gene)
   heatmap_genes <- heatmap_genes[seq_len(min(heatmap_top_n, length(heatmap_genes)))]
 
-  gene_order <- vote_table %>%
-    dplyr::filter(gene %in% heatmap_genes) %>%
-    dplyr::arrange(dplyr::desc(n_methods), gene) %>%
+  gene_order <- vote_table |>
+    dplyr::filter(gene %in% heatmap_genes) |>
+    dplyr::arrange(dplyr::desc(n_methods), gene) |>
     dplyr::pull(gene)
 
-  heatmap_long <- expand.grid(gene = heatmap_genes, method = method_order, stringsAsFactors = FALSE) %>%
-    dplyr::left_join(vote_long %>% dplyr::mutate(selected = 1), by = c("gene", "method")) %>%
-    dplyr::mutate(selected = ifelse(is.na(selected), 0, selected)) %>%
-    dplyr::left_join(method_info, by = "method") %>%
+  heatmap_long <- expand.grid(gene = heatmap_genes, method = method_order, stringsAsFactors = FALSE) |>
+    dplyr::left_join(vote_long |> dplyr::mutate(selected = 1), by = c("gene", "method")) |>
+    dplyr::mutate(selected = ifelse(is.na(selected), 0, selected)) |>
+    dplyr::left_join(method_info, by = "method") |>
     dplyr::mutate(
       method_class = factor(method_class, levels = class_order),
       tile_fill = ifelse(selected == 1, as.character(method_class), "Not selected"),
@@ -937,7 +929,7 @@ automl4r_plot_consensus_nature <- function(all_genes,
       plot.margin = ggplot2::margin(8, 8, 8, 8)
     )
 
-  method_count_plot <- method_count %>%
+  method_count_plot <- method_count |>
     dplyr::mutate(method = factor(method, levels = rev(method_order)))
 
   p_method_count <- ggplot2::ggplot(method_count_plot, ggplot2::aes(x = n_selected_genes, y = method, fill = method_class)) +

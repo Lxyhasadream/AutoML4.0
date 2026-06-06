@@ -1,9 +1,17 @@
 ^自动机器学习4\.0\.R$
+^自动机器学习4\.0带绘图的\.R$
+^PPI测试代码\.R$
 ^\.agents$
 ^\.codex$
 ^\.git$
+^\.\.Rcheck$
 ^catboost_info$
 ^run_full_test\.R$
 ^ML_screening_results
+^STRING_PPI_
+^STRING_offline_PPI_results
+^Cytoscape\.pdf$
+^String\.R$
+^resource$
 ^AutoML4R.*\.Rcheck$
 ^AutoML4R_.*\.tar\.gz$

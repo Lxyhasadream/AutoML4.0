@@ -21,8 +21,34 @@ test_that("auto_ppi_analysis ranks a small PPI network with 11 methods", {
   expect_length(ppi_methods(), 11)
   expect_true(all(ppi_methods() %in% colnames(result$scores)))
   expect_equal(names(result$top_tables), ppi_methods())
+  expect_equal(result$intersection_genes_all_11_methods, sort(unique(Reduce(intersect, result$top_nodes))))
+  expect_equal(result$downstream_genes, result$intersection_genes_all_11_methods)
   expect_true(nrow(result$hub_frequency) > 0)
   expect_true(nrow(result$method_formula_check) == 11)
+})
+
+test_that("auto_ppi_analysis writes the strict 11-method intersection file", {
+  edge_df <- data.frame(
+    source = c("A", "A", "A", "B", "B", "C", "D", "E"),
+    target = c("B", "C", "D", "C", "E", "F", "E", "F"),
+    stringsAsFactors = FALSE
+  )
+  out_dir <- file.path(tempdir(), "ppi_strict_intersection_output")
+
+  result <- auto_ppi_analysis(
+    edge_df,
+    from_col = "source",
+    to_col = "target",
+    output_dir = out_dir,
+    top_n = 3,
+    epc_n_sim = 5,
+    write_outputs = TRUE,
+    plot_outputs = FALSE,
+    verbose = FALSE
+  )
+
+  expect_equal(result$downstream_genes, result$intersection_genes_all_11_methods)
+  expect_true(file.exists(file.path(out_dir, "PPI_top3_intersection_all_11_methods.csv")))
 })
 
 test_that("auto_string_ppi_analysis builds local STRING edges and ranks hubs", {
@@ -85,7 +111,9 @@ test_that("auto_string_ppi_analysis builds local STRING edges and ranks hubs", {
   expect_equal(nrow(result$edge_df), 2)
   expect_true("ALIAS_MYC" %in% result$mapping$gene_input)
   expect_equal(result$downstream_genes, result$intersection_genes_all_11_methods)
+  expect_equal(result$downstream_genes, result$ppi$intersection_genes_all_11_methods)
   expect_true(file.exists(file.path(out_dir, "STRING_PPI_top2_intersection_all_11_methods.csv")))
+  expect_true(file.exists(file.path(out_dir, "PPI_top2_intersection_all_11_methods.csv")))
   expect_true(file.exists(file.path(out_dir, "STRING_offline_edge_df_for_cytohubba.csv")))
 })
 

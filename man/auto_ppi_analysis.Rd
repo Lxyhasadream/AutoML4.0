@@ -36,15 +36,18 @@ auto_ppi_analysis(
 \item{verbose}{Whether to print network summary messages.}
 }
 \description{
-Ranks PPI network nodes using 11 cytoHubba-style topology algorithms and writes hub-screening tables, consensus hub summaries, intersection tables, and publication-oriented PPI figures. This is the lower-level PPI entry point for users who already have a PPI edge table. Users who only have a gene set should usually call \code{\link{auto_string_ppi_analysis}} instead.
+Ranks PPI network nodes using 11 cytoHubba-style topology algorithms and writes hub-screening tables, the strict top-\code{n} intersection across all 11 methods, consensus hub summaries, intersection tables, and publication-oriented PPI figures. This is the lower-level PPI entry point for users who already have a PPI edge table. Users who only have a gene set should usually call \code{\link{auto_string_ppi_analysis}} instead.
 }
 \details{
 The implemented algorithms are Degree, MNC, DMNC, MCC, BottleNeck, EcCentricity, Closeness, Radiality, Betweenness, Stress, and EPC, following the formulas described in the cytoHubba paper. The network is treated as an undirected simple graph; duplicate edges and self-loops are removed.
 
-Main output files include \code{PPI_cytohubba_11_scores.csv}, per-method top-node tables, integrated rank tables, consensus hub tables, algorithm intersection tables, and figures under \code{figures/}.
+Main output files include \code{PPI_cytohubba_11_scores.csv}, per-method top-node tables, integrated rank tables, \code{PPI_top<n>_intersection_all_11_methods.csv}, consensus hub tables, algorithm intersection tables, and figures under \code{figures/}.
 }
 \value{
-An \code{auto_ppi_analysis} object containing the igraph graph, score table, top tables, top-node lists, integrated rank table, consensus hubs, intersection results, formula-check table, and output directory.
+An \code{auto_ppi_analysis} object containing the igraph graph, score table,
+top tables, top-node lists, integrated rank table, consensus hubs, intersection
+results, \code{intersection_genes_all_11_methods}, \code{downstream_genes},
+formula-check table, and output directory.
 }
 \examples{
 \dontrun{

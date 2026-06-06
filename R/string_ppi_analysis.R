@@ -82,7 +82,7 @@ auto_string_ppi_analysis <- function(genes,
     verbose = verbose
   )
 
-  strict_intersection_genes <- sort(unique(Reduce(intersect, hub_result$top_nodes)))
+  strict_intersection_genes <- hub_result$intersection_genes_all_11_methods
   consensus_hub_genes <- sort(unique(hub_result$consensus_hubs$Node))
 
   if (write_outputs) {

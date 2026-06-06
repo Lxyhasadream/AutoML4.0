@@ -92,6 +92,7 @@ auto_ppi_analysis <- function(edge_df,
   }
   consensus_hubs <- hub_frequency[hub_frequency$Frequency_in_top_lists >= consensus_min_methods, , drop = FALSE]
   intersections <- ppi_calculate_algorithm_intersections(top_nodes)
+  strict_intersection_genes <- ppi_strict_intersection_all_methods(top_nodes)
 
   if (write_outputs || plot_outputs) {
     dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
@@ -104,6 +105,7 @@ auto_ppi_analysis <- function(edge_df,
       integrated_rank = integrated_rank,
       consensus_hubs = consensus_hubs,
       intersections = intersections,
+      strict_intersection_genes = strict_intersection_genes,
       output_dir = output_dir,
       top_n = top_n,
       consensus_min_methods = consensus_min_methods
@@ -130,6 +132,8 @@ auto_ppi_analysis <- function(edge_df,
       integrated_rank = integrated_rank,
       consensus_hubs = consensus_hubs,
       intersections = intersections,
+      intersection_genes_all_11_methods = strict_intersection_genes,
+      downstream_genes = strict_intersection_genes,
       method_formula_check = ppi_formula_check_table(),
       output_dir = if (write_outputs || plot_outputs) normalizePath(output_dir, mustWork = FALSE) else NA_character_
     ),
@@ -443,12 +447,24 @@ ppi_calculate_algorithm_intersections <- function(top_nodes, keep_empty = TRUE) 
   list(intersection_summary = intersection_summary, intersection_gene_long = intersection_gene_long)
 }
 
+ppi_strict_intersection_all_methods <- function(top_nodes) {
+  method_names <- names(top_nodes)
+  expected_methods <- ppi_methods()
+  missing_methods <- setdiff(expected_methods, method_names)
+  if (length(missing_methods) > 0) {
+    stop("Missing PPI top-node list(s): ", paste(missing_methods, collapse = ", "), call. = FALSE)
+  }
+  top_nodes <- top_nodes[expected_methods]
+  sort(unique(Reduce(intersect, top_nodes)))
+}
+
 ppi_write_outputs <- function(score_df,
                               top_combined,
                               hub_frequency,
                               integrated_rank,
                               consensus_hubs,
                               intersections,
+                              strict_intersection_genes,
                               output_dir,
                               top_n,
                               consensus_min_methods) {
@@ -459,6 +475,7 @@ ppi_write_outputs <- function(score_df,
   utils::write.csv(consensus_hubs, file.path(output_dir, paste0("PPI_consensus_hubs_frequency_ge_", consensus_min_methods, ".csv")), row.names = FALSE)
   utils::write.csv(intersections$intersection_summary, file.path(output_dir, paste0("PPI_top", top_n, "_algorithm_intersection_summary_2_to_11.csv")), row.names = FALSE)
   utils::write.csv(intersections$intersection_gene_long, file.path(output_dir, paste0("PPI_top", top_n, "_algorithm_intersection_gene_long_2_to_11.csv")), row.names = FALSE)
+  utils::write.csv(data.frame(gene = strict_intersection_genes, stringsAsFactors = FALSE), file.path(output_dir, paste0("PPI_top", top_n, "_intersection_all_11_methods.csv")), row.names = FALSE)
 }
 
 ppi_plot_outputs <- function(graph, score_df, hub_frequency, consensus_hubs, output_dir) {
