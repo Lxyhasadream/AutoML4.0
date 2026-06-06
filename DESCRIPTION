@@ -33,6 +33,7 @@ Suggests:
     ggplot2,
     glmnet,
     grid,
+    igraph,
     lightgbm,
     Matrix,
     mixOmics,

@@ -13,3 +13,6 @@ ML_screening_results_source_full_plot_test/
 ML_screening_results_beautiful_plot_module_test/
 catboost_info/
 password
+PPI_screening_results/
+PPI_screening_results_test/
+cytoHubba_R_test_results/

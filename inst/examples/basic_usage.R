@@ -19,3 +19,13 @@ library(AutoML4R)
 #   group = group,
 #   positive_class = "Disease"
 # )
+
+# Optional PPI hub screening from an edge table.
+# ppi_edges <- read.csv("ppi_edges.csv")
+# ppi_result <- auto_ppi_analysis(
+#   edge_df = ppi_edges,
+#   from_col = "source",
+#   to_col = "target",
+#   output_dir = "PPI_screening_results",
+#   top_n = 10
+# )

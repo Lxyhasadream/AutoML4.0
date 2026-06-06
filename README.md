@@ -74,6 +74,39 @@ Key output files include:
 - `NatureStyle_Algorithm_selected_gene_count_class_size_ordered_largefont.pdf/.png`
 - `NatureStyle_algorithm_selected_gene_plots/<method>/`
 
+## PPI Hub Screening
+
+AutoML4R also provides cytoHubba-style PPI hub screening with 11 topology
+algorithms from the cytoHubba paper:
+
+```r
+ppi_result <- auto_ppi_analysis(
+  edge_df = ppi_edges,
+  from_col = "source",
+  to_col = "target",
+  output_dir = "PPI_screening_results",
+  top_n = 10
+)
+```
+
+`ppi_edges` should contain one PPI edge per row. The network is treated as an
+undirected simple graph; duplicate edges and self-loops are removed.
+
+The implemented PPI methods are:
+
+```r
+ppi_methods()
+```
+
+The PPI workflow writes:
+
+- `PPI_cytohubba_11_scores.csv`
+- per-method top-node tables
+- integrated rank and consensus hub tables
+- algorithm intersection tables from 2 to 11 methods
+- PPI figures under `figures/`, including hub-frequency barplot,
+  normalized 11-method score heatmap, and consensus-hub network plot
+
 Default methods currently include 25 feature-selection algorithms or algorithm variants:
 
 ```r

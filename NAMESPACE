@@ -1,6 +1,8 @@
 export(auto_ml_analysis)
+export(auto_ppi_analysis)
 export(aml_methods)
 export(automl4r_beautiful_plots)
+export(ppi_methods)
 importFrom(graphics, abline, legend, par, title)
 importFrom(grDevices, dev.off, pdf)
 importFrom(stats, coef, filter, na.omit, p.adjust, predict, reorder, runif, sd, setNames, wilcox.test)
