@@ -24,3 +24,61 @@ test_that("auto_ppi_analysis ranks a small PPI network with 11 methods", {
   expect_true(nrow(result$hub_frequency) > 0)
   expect_true(nrow(result$method_formula_check) == 11)
 })
+
+test_that("auto_string_ppi_analysis builds local STRING edges and ranks hubs", {
+  resource_dir <- file.path(tempdir(), "string_resource")
+  out_dir <- file.path(tempdir(), "string_ppi_output")
+  dir.create(resource_dir, showWarnings = FALSE, recursive = TRUE)
+
+  write_gz <- function(path, lines) {
+    con <- gzfile(path, open = "wt")
+    on.exit(close(con), add = TRUE)
+    writeLines(lines, con)
+  }
+
+  write_gz(
+    file.path(resource_dir, "9606.protein.info.v12.0.txt.gz"),
+    c(
+      "string_protein_id\tpreferred_name",
+      "9606.P1\tTP53",
+      "9606.P2\tEGFR",
+      "9606.P3\tMYC"
+    )
+  )
+  write_gz(
+    file.path(resource_dir, "9606.protein.aliases.v12.0.txt.gz"),
+    c(
+      "string_protein_id\talias\tsource",
+      "9606.P3\tALIAS_MYC\tEnsembl"
+    )
+  )
+  write_gz(
+    file.path(resource_dir, "9606.protein.links.v12.0.txt.gz"),
+    c(
+      "protein1 protein2 combined_score",
+      "9606.P1 9606.P2 900",
+      "9606.P2 9606.P1 900",
+      "9606.P1 9606.P3 700",
+      "9606.P3 9606.P1 700",
+      "9606.P2 9606.P3 300"
+    )
+  )
+
+  result <- auto_string_ppi_analysis(
+    genes = c("TP53", "EGFR", "ALIAS_MYC"),
+    resource_dir = resource_dir,
+    output_dir = out_dir,
+    score_threshold = 400,
+    top_n = 2,
+    epc_n_sim = 5,
+    write_outputs = TRUE,
+    plot_outputs = FALSE,
+    verbose = FALSE
+  )
+
+  expect_s3_class(result, "auto_string_ppi_analysis")
+  expect_s3_class(result$ppi, "auto_ppi_analysis")
+  expect_equal(nrow(result$edge_df), 2)
+  expect_true("ALIAS_MYC" %in% result$mapping$gene_input)
+  expect_true(file.exists(file.path(out_dir, "STRING_offline_edge_df_for_cytohubba.csv")))
+})
