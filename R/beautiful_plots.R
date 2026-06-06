@@ -75,26 +75,49 @@ automl4r_method_class <- function(method) {
 }
 
 automl4r_theme_nature <- function(base_size = 15,
-                                  font_panel_title = 28,
-                                  font_axis_title = 28,
-                                  font_axis_text = 20,
-                                  font_legend_title = 20,
-                                  font_legend_text = 20,
-                                  font_facet = 20) {
-  ggplot2::theme_classic(base_size = base_size) +
+                                  font_panel_title = 24,
+                                  font_axis_title = 20,
+                                  font_axis_text = 18,
+                                  font_legend_title = 18,
+                                  font_legend_text = 18,
+                                  font_facet = 24,
+                                  font_family = "Arial") {
+  ggplot2::theme_classic(base_size = base_size, base_family = font_family) +
     ggplot2::theme(
-      text = ggplot2::element_text(color = "black"),
-      plot.title = ggplot2::element_text(size = font_panel_title, face = "bold", hjust = 0.5, color = "black"),
-      axis.title = ggplot2::element_text(size = font_axis_title, face = "bold", color = "black"),
-      axis.text = ggplot2::element_text(size = font_axis_text, color = "black"),
+      text = ggplot2::element_text(family = font_family, color = "black"),
+      plot.title = ggplot2::element_text(family = font_family, size = font_panel_title, face = "bold", hjust = 0.5, color = "black"),
+      plot.subtitle = ggplot2::element_text(family = font_family, size = font_panel_title, color = "black"),
+      axis.title = ggplot2::element_text(family = font_family, size = font_axis_title, face = "bold", color = "black"),
+      axis.text = ggplot2::element_text(family = font_family, size = font_axis_text, color = "black"),
       axis.line = ggplot2::element_line(color = "black", linewidth = 0.55),
       axis.ticks = ggplot2::element_line(color = "black", linewidth = 0.45),
       panel.border = ggplot2::element_rect(color = "black", fill = NA, linewidth = 0.65),
-      legend.title = ggplot2::element_text(size = font_legend_title, face = "bold", color = "black"),
-      legend.text = ggplot2::element_text(size = font_legend_text, color = "black"),
+      legend.title = ggplot2::element_text(family = font_family, size = font_legend_title, face = "bold", color = "black"),
+      legend.text = ggplot2::element_text(family = font_family, size = font_legend_text, color = "black"),
       strip.background = ggplot2::element_rect(fill = "grey97", color = "grey40", linewidth = 0.45),
-      strip.text = ggplot2::element_text(size = font_facet, face = "bold", color = "black"),
+      strip.text = ggplot2::element_text(family = font_family, size = font_facet, face = "bold", color = "black"),
       plot.margin = ggplot2::margin(10, 10, 10, 10)
+    )
+}
+
+automl4r_apply_plot_typography <- function(plot,
+                                           font_family = "Arial",
+                                           axis_text_size = 18,
+                                           axis_title_size = 20,
+                                           title_size = 24) {
+  plot +
+    ggplot2::theme(
+      text = ggplot2::element_text(family = font_family),
+      plot.title = ggplot2::element_text(family = font_family, size = title_size, face = "bold", hjust = 0.5, color = "black"),
+      plot.subtitle = ggplot2::element_text(family = font_family, size = title_size, color = "black"),
+      axis.title = ggplot2::element_text(family = font_family, size = axis_title_size, face = "bold", color = "black"),
+      axis.title.x = ggplot2::element_text(family = font_family, size = axis_title_size, face = "bold", color = "black"),
+      axis.title.y = ggplot2::element_text(family = font_family, size = axis_title_size, face = "bold", color = "black"),
+      axis.text = ggplot2::element_text(family = font_family, size = axis_text_size, color = "black"),
+      strip.text = ggplot2::element_text(family = font_family, size = title_size, face = "bold", color = "black"),
+      legend.title = ggplot2::element_text(family = font_family, size = axis_text_size, face = "bold", color = "black"),
+      legend.text = ggplot2::element_text(family = font_family, size = axis_text_size, color = "black"),
+      plot.tag = ggplot2::element_text(family = font_family, size = title_size, face = "bold", color = "black")
     )
 }
 
@@ -140,7 +163,8 @@ automl4r_result_to_all_genes <- function(result) {
 }
 
 automl4r_save_plot <- function(plot, file_base, width, height, dpi = 600) {
-  ggplot2::ggsave(paste0(file_base, ".pdf"), plot, width = width, height = height, bg = "white")
+  plot <- automl4r_apply_plot_typography(plot)
+  ggplot2::ggsave(paste0(file_base, ".pdf"), plot, width = width, height = height, bg = "white", device = grDevices::cairo_pdf)
   ggplot2::ggsave(paste0(file_base, ".png"), plot, width = width, height = height, dpi = dpi, bg = "white")
 }
 
@@ -187,7 +211,7 @@ automl4r_plot_method_selected_scores <- function(result, output_dir, top_n_per_m
         y = NULL,
         title = paste0(method_label, " selected genes")
       ) +
-      automl4r_theme_nature(base_size = 13, font_panel_title = 24, font_axis_title = 22, font_axis_text = 16) +
+      automl4r_theme_nature(base_size = 13, font_panel_title = 24, font_axis_title = 20, font_axis_text = 18) +
       ggplot2::theme(
         panel.grid.major.x = ggplot2::element_line(color = "grey90", linewidth = 0.30),
         panel.grid.major.y = ggplot2::element_blank(),
@@ -250,9 +274,9 @@ automl4r_plot_method_selected_expression <- function(result,
         y = "Expression",
         title = paste0(method_label, " selected-gene expression")
       ) +
-      automl4r_theme_nature(base_size = 12, font_panel_title = 24, font_axis_title = 20, font_axis_text = 14, font_facet = 14) +
+      automl4r_theme_nature(base_size = 12, font_panel_title = 24, font_axis_title = 20, font_axis_text = 18, font_facet = 24) +
       ggplot2::theme(
-        axis.text.x = ggplot2::element_text(angle = 35, hjust = 1),
+        axis.text.x = ggplot2::element_text(family = "Arial", size = 18, angle = 35, hjust = 1),
         panel.grid.major.x = ggplot2::element_blank(),
         legend.position = "top"
       )
@@ -394,8 +418,8 @@ automl4r_plot_lasso_optimized <- function(result, output_dir) {
       ggplot2::labs(x = NULL, y = "Absolute LASSO coefficient", title = "LASSO-selected genes") +
       ggplot2::theme(
         plot.title = ggplot2::element_text(size = 18, face = "bold", hjust = 0.5, color = "black"),
-        axis.text.y = ggplot2::element_text(size = 13, color = "black"),
-        axis.text.x = ggplot2::element_text(size = 13, color = "black"),
+        axis.text.y = ggplot2::element_text(family = "Arial", size = 18, color = "black"),
+        axis.text.x = ggplot2::element_text(family = "Arial", size = 18, color = "black"),
         axis.title.x = ggplot2::element_text(size = 16, face = "bold", color = "black"),
         axis.line = ggplot2::element_line(linewidth = 0.7, color = "black"),
         axis.ticks = ggplot2::element_line(linewidth = 0.7, color = "black"),
@@ -447,7 +471,7 @@ automl4r_plot_ranked_algorithm_bar <- function(rankings,
     ggplot2::geom_point(color = "#B2182B", size = 2.6) +
     ggplot2::coord_flip() +
     ggplot2::labs(x = NULL, y = xlab, title = title) +
-    automl4r_theme_nature(base_size = 13, font_panel_title = 22, font_axis_title = 20, font_axis_text = 14) +
+    automl4r_theme_nature(base_size = 13, font_panel_title = 24, font_axis_title = 20, font_axis_text = 18) +
     ggplot2::theme(
       panel.grid.major.x = ggplot2::element_line(color = "grey90", linewidth = 0.30),
       panel.grid.major.y = ggplot2::element_blank(),
@@ -766,17 +790,17 @@ automl4r_plot_consensus_nature <- function(all_genes,
     dplyr::mutate(method_class = automl4r_method_class(method))
   utils::write.csv(method_info, file.path(output_dir, "Feature_selection_method_class_annotation.csv"), row.names = FALSE)
 
-  font_main_title <- 28
-  font_panel_tag <- 28
-  font_panel_title <- 28
-  font_axis_title <- 28
-  font_axis_text <- 20
-  font_gene_A <- 20
-  font_gene_B <- 20
-  font_gene_C <- 20
-  font_heatmap_x <- 20
-  font_legend_title <- 20
-  font_legend_text <- 20
+  font_main_title <- 24
+  font_panel_tag <- 24
+  font_panel_title <- 24
+  font_axis_title <- 20
+  font_axis_text <- 18
+  font_gene_A <- 18
+  font_gene_B <- 18
+  font_gene_C <- 18
+  font_heatmap_x <- 18
+  font_legend_title <- 18
+  font_legend_text <- 18
 
   pal_low <- "#A6CEE3"
   pal_high <- "#1F78B4"
@@ -827,8 +851,8 @@ automl4r_plot_consensus_nature <- function(all_genes,
     ) +
     automl4r_theme_nature(base_size = 13) +
     ggplot2::theme(
-      axis.text.x = ggplot2::element_text(size = font_axis_text, color = "black"),
-      axis.text.y = ggplot2::element_text(size = font_gene_A, color = "black"),
+      axis.text.x = ggplot2::element_text(family = "Arial", size = font_axis_text, color = "black"),
+      axis.text.y = ggplot2::element_text(family = "Arial", size = font_gene_A, color = "black"),
       legend.position = "right",
       legend.key.height = grid::unit(0.70, "cm"),
       legend.key.width = grid::unit(0.45, "cm"),
@@ -890,10 +914,10 @@ automl4r_plot_consensus_nature <- function(all_genes,
     ggplot2::labs(x = "Feature-selection algorithms grouped by algorithm class", y = NULL, title = "Algorithm-level support for candidate genes") +
     automl4r_theme_nature(base_size = 11) +
     ggplot2::theme(
-      plot.title = ggplot2::element_text(size = font_panel_title, face = "bold", hjust = 0.5, color = "black"),
-      axis.title.x = ggplot2::element_text(size = font_axis_title, face = "bold", color = "black"),
-      axis.text.x = ggplot2::element_text(size = font_heatmap_x, angle = 50, hjust = 1, vjust = 1, color = "black"),
-      axis.text.y = ggplot2::element_text(size = font_gene_B, color = "black"),
+      plot.title = ggplot2::element_text(family = "Arial", size = font_panel_title, face = "bold", hjust = 0.5, color = "black"),
+      axis.title.x = ggplot2::element_text(family = "Arial", size = font_axis_title, face = "bold", color = "black"),
+      axis.text.x = ggplot2::element_text(family = "Arial", size = font_heatmap_x, angle = 50, hjust = 1, vjust = 1, color = "black"),
+      axis.text.y = ggplot2::element_text(family = "Arial", size = font_gene_B, color = "black"),
       strip.text.x = ggplot2::element_blank(),
       strip.background = ggplot2::element_blank(),
       panel.background = ggplot2::element_rect(fill = "white", color = NA),
@@ -905,8 +929,8 @@ automl4r_plot_consensus_nature <- function(all_genes,
       axis.ticks.x = ggplot2::element_blank(),
       axis.ticks.y = ggplot2::element_blank(),
       legend.position = "right",
-      legend.title = ggplot2::element_text(size = font_legend_title, face = "bold", color = "black"),
-      legend.text = ggplot2::element_text(size = font_legend_text, color = "black"),
+      legend.title = ggplot2::element_text(family = "Arial", size = font_legend_title, face = "bold", color = "black"),
+      legend.text = ggplot2::element_text(family = "Arial", size = font_legend_text, color = "black"),
       legend.key.height = grid::unit(0.60, "cm"),
       legend.key.width = grid::unit(0.60, "cm"),
       panel.spacing.x = grid::unit(0.08, "lines"),
@@ -923,8 +947,8 @@ automl4r_plot_consensus_nature <- function(all_genes,
     ggplot2::labs(x = "Number of selected genes", y = NULL, title = "Feature output size of individual algorithms") +
     automl4r_theme_nature(base_size = 13) +
     ggplot2::theme(
-      axis.text.x = ggplot2::element_text(size = font_axis_text, color = "black"),
-      axis.text.y = ggplot2::element_text(size = font_gene_C, color = "black"),
+      axis.text.x = ggplot2::element_text(family = "Arial", size = font_axis_text, color = "black"),
+      axis.text.y = ggplot2::element_text(family = "Arial", size = font_gene_C, color = "black"),
       legend.position = "right",
       legend.key.height = grid::unit(0.60, "cm"),
       legend.key.width = grid::unit(0.60, "cm"),
@@ -951,17 +975,18 @@ automl4r_plot_consensus_nature <- function(all_genes,
       tag_levels = "A",
       title = "Multi-algorithm consensus feature-selection overview",
       theme = ggplot2::theme(
-        plot.title = ggplot2::element_text(color = "black", size = font_main_title, face = "bold", hjust = 0.5),
-        plot.tag = ggplot2::element_text(color = "black", size = font_panel_tag, face = "bold")
+        plot.title = ggplot2::element_text(family = "Arial", color = "black", size = font_main_title, face = "bold", hjust = 0.5),
+        plot.tag = ggplot2::element_text(family = "Arial", color = "black", size = font_panel_tag, face = "bold")
       )
     )
 
   ggplot2::ggsave(
     filename = file.path(output_dir, "NatureStyle_Consensus_feature_selection_overview_FINAL_largefont.pdf"),
-    plot = p_combined_final,
+    plot = automl4r_apply_plot_typography(p_combined_final),
     width = combined_width + 12,
     height = combined_height + 20,
-    bg = "white"
+    bg = "white",
+    device = grDevices::cairo_pdf
   )
 
   list(

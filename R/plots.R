@@ -28,19 +28,58 @@ aml_plot_palette <- function() {
   c("#2A6F97", "#F28E2B", "#4E79A7", "#59A14F", "#E15759", "#B07AA1", "#76B7B2")
 }
 
+aml_plot_typography <- function() {
+  list(
+    family = "Arial",
+    axis_text = 18,
+    axis_title = 20,
+    title = 24
+  )
+}
+
+aml_apply_plot_typography <- function(plot) {
+  typo <- aml_plot_typography()
+  plot +
+    ggplot2::theme(
+      text = ggplot2::element_text(family = typo$family),
+      plot.title = ggplot2::element_text(family = typo$family, size = typo$title, face = "bold", hjust = 0.5, color = "black"),
+      plot.subtitle = ggplot2::element_text(family = typo$family, size = typo$title, color = "black"),
+      axis.title = ggplot2::element_text(family = typo$family, size = typo$axis_title, face = "bold", color = "black"),
+      axis.title.x = ggplot2::element_text(family = typo$family, size = typo$axis_title, face = "bold", color = "black"),
+      axis.title.y = ggplot2::element_text(family = typo$family, size = typo$axis_title, face = "bold", color = "black"),
+      axis.text = ggplot2::element_text(family = typo$family, size = typo$axis_text, color = "black"),
+      strip.text = ggplot2::element_text(family = typo$family, size = typo$title, face = "bold", color = "black"),
+      legend.title = ggplot2::element_text(family = typo$family, size = typo$axis_text, face = "bold", color = "black"),
+      legend.text = ggplot2::element_text(family = typo$family, size = typo$axis_text, color = "black")
+    )
+}
+
+aml_base_plot_par <- function() {
+  graphics::par(
+    family = "Arial",
+    cex.axis = 1.5,
+    cex.lab = 1.67,
+    cex.main = 2.0,
+    font.lab = 2,
+    font.main = 2
+  )
+}
+
 aml_publication_theme <- function(base_size = 13) {
   aml_need_package("ggplot2")
-  ggplot2::theme_minimal(base_size = base_size) +
+  typo <- aml_plot_typography()
+  ggplot2::theme_minimal(base_size = base_size, base_family = typo$family) +
     ggplot2::theme(
-      plot.title = ggplot2::element_text(face = "bold", color = "#1F2933", margin = ggplot2::margin(b = 6)),
-      plot.subtitle = ggplot2::element_text(color = "#52616B", margin = ggplot2::margin(b = 12)),
-      axis.title = ggplot2::element_text(color = "#1F2933"),
-      axis.text = ggplot2::element_text(color = "#334E68"),
+      text = ggplot2::element_text(family = typo$family),
+      plot.title = ggplot2::element_text(family = typo$family, size = typo$title, face = "bold", color = "#1F2933", margin = ggplot2::margin(b = 6)),
+      plot.subtitle = ggplot2::element_text(family = typo$family, size = typo$title, color = "#52616B", margin = ggplot2::margin(b = 12)),
+      axis.title = ggplot2::element_text(family = typo$family, size = typo$axis_title, color = "#1F2933"),
+      axis.text = ggplot2::element_text(family = typo$family, size = typo$axis_text, color = "#334E68"),
       panel.grid.major.y = ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank(),
       legend.position = "top",
       legend.title = ggplot2::element_blank(),
-      strip.text = ggplot2::element_text(face = "bold", color = "#1F2933"),
+      strip.text = ggplot2::element_text(family = typo$family, size = typo$title, face = "bold", color = "#1F2933"),
       strip.background = ggplot2::element_rect(fill = "#F4F7F9", color = NA),
       plot.background = ggplot2::element_rect(fill = "white", color = NA),
       panel.background = ggplot2::element_rect(fill = "white", color = NA)
@@ -137,7 +176,7 @@ aml_plot_selected_gene_expression <- function(res, method_dir, x, y, top_n, posi
     ggplot2::scale_color_manual(values = fill_values) +
     aml_publication_theme(base_size = 12) +
     ggplot2::theme(
-      axis.text.x = ggplot2::element_text(angle = 35, hjust = 1),
+      axis.text.x = ggplot2::element_text(family = "Arial", size = 18, angle = 35, hjust = 1),
       panel.grid.major.x = ggplot2::element_blank()
     ) +
     ggplot2::labs(
@@ -182,17 +221,20 @@ aml_plot_glmnet_process <- function(res, method_dir) {
   if (is.null(cv)) {
     return(invisible(NULL))
   }
-  grDevices::pdf(file.path(method_dir, "cv_curve.pdf"), width = 7, height = 6)
+  grDevices::cairo_pdf(file.path(method_dir, "cv_curve.pdf"), width = 7, height = 6, family = "Arial")
+  aml_base_plot_par()
   plot(cv)
   graphics::title("Cross-validation curve")
   grDevices::dev.off()
 
   grDevices::png(file.path(method_dir, "cv_curve.png"), width = 1800, height = 1500, res = 240)
+  aml_base_plot_par()
   plot(cv)
   graphics::title("Cross-validation curve")
   grDevices::dev.off()
 
-  grDevices::pdf(file.path(method_dir, "coefficient_path.pdf"), width = 8, height = 6)
+  grDevices::cairo_pdf(file.path(method_dir, "coefficient_path.pdf"), width = 8, height = 6, family = "Arial")
+  aml_base_plot_par()
   plot(cv$glmnet.fit, xvar = "lambda", label = FALSE)
   graphics::abline(v = log(cv$lambda.min), lty = 2, col = "#D95F02", lwd = 2)
   graphics::abline(v = log(cv$lambda.1se), lty = 3, col = "#1B9E77", lwd = 2)
@@ -200,6 +242,7 @@ aml_plot_glmnet_process <- function(res, method_dir) {
   grDevices::dev.off()
 
   grDevices::png(file.path(method_dir, "coefficient_path.png"), width = 2000, height = 1500, res = 240)
+  aml_base_plot_par()
   plot(cv$glmnet.fit, xvar = "lambda", label = FALSE)
   graphics::abline(v = log(cv$lambda.min), lty = 2, col = "#D95F02", lwd = 2)
   graphics::abline(v = log(cv$lambda.1se), lty = 3, col = "#1B9E77", lwd = 2)
@@ -212,19 +255,23 @@ aml_plot_random_forest_process <- function(res, method_dir) {
   if (is.null(fit)) {
     return(invisible(NULL))
   }
-  grDevices::pdf(file.path(method_dir, "oob_error_curve.pdf"), width = 7, height = 6)
+  grDevices::cairo_pdf(file.path(method_dir, "oob_error_curve.pdf"), width = 7, height = 6, family = "Arial")
+  aml_base_plot_par()
   plot(fit, main = "Random forest OOB error")
   grDevices::dev.off()
 
   grDevices::png(file.path(method_dir, "oob_error_curve.png"), width = 1800, height = 1500, res = 240)
+  aml_base_plot_par()
   plot(fit, main = "Random forest OOB error")
   grDevices::dev.off()
 
-  grDevices::pdf(file.path(method_dir, "variable_importance_dotchart.pdf"), width = 8, height = 7)
+  grDevices::cairo_pdf(file.path(method_dir, "variable_importance_dotchart.pdf"), width = 8, height = 7, family = "Arial")
+  aml_base_plot_par()
   randomForest::varImpPlot(fit, main = "Random forest variable importance")
   grDevices::dev.off()
 
   grDevices::png(file.path(method_dir, "variable_importance_dotchart.png"), width = 1800, height = 1600, res = 240)
+  aml_base_plot_par()
   randomForest::varImpPlot(fit, main = "Random forest variable importance")
   grDevices::dev.off()
 }
@@ -242,15 +289,18 @@ aml_plot_boruta_process <- function(res, method_dir) {
   if (is.null(fixed)) {
     return(invisible(NULL))
   }
-  grDevices::pdf(file.path(method_dir, "boruta_importance_boxplot.pdf"), width = 10, height = 7)
+  grDevices::cairo_pdf(file.path(method_dir, "boruta_importance_boxplot.pdf"), width = 10, height = 7, family = "Arial")
+  aml_base_plot_par()
   plot(fixed, las = 2, cex.axis = 0.8, main = "Boruta feature importance")
   grDevices::dev.off()
 
   grDevices::png(file.path(method_dir, "boruta_importance_boxplot.png"), width = 2400, height = 1800, res = 240)
+  aml_base_plot_par()
   plot(fixed, las = 2, cex.axis = 0.8, main = "Boruta feature importance")
   grDevices::dev.off()
 
-  grDevices::pdf(file.path(method_dir, "boruta_importance_history.pdf"), width = 10, height = 7)
+  grDevices::cairo_pdf(file.path(method_dir, "boruta_importance_history.pdf"), width = 10, height = 7, family = "Arial")
+  aml_base_plot_par()
   Boruta::plotImpHistory(fixed, main = "Boruta importance history")
   grDevices::dev.off()
 }
@@ -415,6 +465,7 @@ aml_plot_named_score <- function(score, title, method_dir, file_stem, top_n = 20
 }
 
 aml_save_plot <- function(plot, file_base, width, height) {
-  ggplot2::ggsave(paste0(file_base, ".pdf"), plot, width = width, height = height, bg = "white")
+  plot <- aml_apply_plot_typography(plot)
+  ggplot2::ggsave(paste0(file_base, ".pdf"), plot, width = width, height = height, bg = "white", device = grDevices::cairo_pdf)
   ggplot2::ggsave(paste0(file_base, ".png"), plot, width = width, height = height, dpi = 300, bg = "white")
 }

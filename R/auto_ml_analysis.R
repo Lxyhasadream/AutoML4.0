@@ -811,7 +811,8 @@ aml_plot_consensus <- function(consensus, output_dir, top_n) {
     ggplot2::geom_col(fill = "#2C7FB8", width = 0.72) +
     ggplot2::theme_classic(base_size = 13) +
     ggplot2::labs(x = "Number of supporting methods", y = NULL, title = "Consensus selected features")
-  ggplot2::ggsave(file.path(output_dir, "consensus_feature_votes.pdf"), p, width = 8, height = max(5, 0.28 * nrow(plot_df) + 2))
+  p <- aml_apply_plot_typography(p)
+  ggplot2::ggsave(file.path(output_dir, "consensus_feature_votes.pdf"), p, width = 8, height = max(5, 0.28 * nrow(plot_df) + 2), device = grDevices::cairo_pdf)
   ggplot2::ggsave(file.path(output_dir, "consensus_feature_votes.png"), p, width = 8, height = max(5, 0.28 * nrow(plot_df) + 2), dpi = 300)
 }
 
@@ -835,6 +836,8 @@ aml_plot_method_heatmap <- function(results, output_dir, top_n) {
     ggplot2::theme_classic(base_size = 12) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 35, hjust = 1), legend.position = "none") +
     ggplot2::labs(x = NULL, y = NULL, title = "Method support heatmap")
-  ggplot2::ggsave(file.path(output_dir, "method_support_heatmap.pdf"), p, width = max(7, 1.1 * length(results)), height = max(5, 0.28 * length(features) + 2))
+  p <- aml_apply_plot_typography(p) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(family = "Arial", size = 18, angle = 35, hjust = 1))
+  ggplot2::ggsave(file.path(output_dir, "method_support_heatmap.pdf"), p, width = max(7, 1.1 * length(results)), height = max(5, 0.28 * length(features) + 2), device = grDevices::cairo_pdf)
   ggplot2::ggsave(file.path(output_dir, "method_support_heatmap.png"), p, width = max(7, 1.1 * length(results)), height = max(5, 0.28 * length(features) + 2), dpi = 300)
 }
