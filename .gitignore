@@ -5,3 +5,5 @@
 *.Rcheck
 ML_screening_results/
 ML_screening_results_smoke_test/
+ML_screening_results_full_methods_test/
+catboost_info/

@@ -21,7 +21,7 @@ result <- auto_ml_analysis(
   group = group,
   positive_class = "Disease",
   output_dir = "ML_screening_results",
-  methods = c("univariate", "roc_auc", "lasso", "ridge", "elastic_net", "random_forest", "boruta", "xgboost"),
+  methods = aml_methods(),
   top_n = 20
 )
 ```
@@ -34,6 +34,12 @@ The workflow writes:
 - `consensus_feature_votes.csv`
 - one selected-gene TXT file per method
 - consensus vote and method-support figures
+
+Default methods currently include 25 feature-selection algorithms or algorithm variants:
+
+```r
+aml_methods()
+```
 
 For a runnable simulated-data test:
 
