@@ -88,3 +88,36 @@ test_that("auto_string_ppi_analysis builds local STRING edges and ranks hubs", {
   expect_true(file.exists(file.path(out_dir, "STRING_PPI_top2_intersection_all_11_methods.csv")))
   expect_true(file.exists(file.path(out_dir, "STRING_offline_edge_df_for_cytohubba.csv")))
 })
+
+test_that("auto_ppi_upset_plot draws selected-method intersections", {
+  edge_df <- data.frame(
+    source = c("A", "A", "A", "B", "B", "C", "D", "E"),
+    target = c("B", "C", "D", "C", "E", "F", "E", "F"),
+    stringsAsFactors = FALSE
+  )
+  ppi <- auto_ppi_analysis(
+    edge_df,
+    from_col = "source",
+    to_col = "target",
+    top_n = 3,
+    epc_n_sim = 5,
+    write_outputs = FALSE,
+    plot_outputs = FALSE,
+    verbose = FALSE
+  )
+  out_dir <- file.path(tempdir(), "ppi_upset_output")
+  upset <- auto_ppi_upset_plot(
+    ppi,
+    methods = c("Degree", "MCC", "MNC", "EPC"),
+    top_n = 3,
+    output_dir = out_dir,
+    file_prefix = "test_upset",
+    write_outputs = TRUE
+  )
+
+  expect_s3_class(upset, "auto_ppi_upset_plot")
+  expect_true(nrow(upset$intersection_summary) > 0)
+  expect_equal(names(upset$selected_sets), c("Degree", "MCC", "MNC", "EPC"))
+  expect_true(file.exists(file.path(out_dir, "test_upset_intersection_summary.csv")))
+  expect_true(file.exists(file.path(out_dir, "test_upset.png")))
+})

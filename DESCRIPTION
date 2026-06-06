@@ -13,8 +13,9 @@ Description: Provides automated machine learning workflows for feature
     and group labels, writes model outputs, and saves feature-selection results.
     The auto_string_ppi_analysis() entry point accepts a gene set, downloads
     required STRING resources when needed, builds a STRING-derived PPI network,
-    runs 11 cytoHubba-style topology algorithms, and returns the downstream
-    intersection hub genes. The automl4r_beautiful_plots() function generates
+    runs 11 cytoHubba-style topology algorithms, returns the downstream
+    intersection hub genes, and can draw publication-style UpSet plots for
+    user-selected PPI algorithms. The automl4r_beautiful_plots() function generates
     publication-oriented per-algorithm selected-gene plots, diagnostic figures,
     expression plots, and Nature-style consensus voting figures.
 License: MIT + file LICENSE

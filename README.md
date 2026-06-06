@@ -114,6 +114,20 @@ ppi_result$downstream_genes
 ppi_result$consensus_hub_genes
 ```
 
+After PPI hub screening, users can draw a publication-style UpSet plot for any
+subset of algorithms and any top-n cutoff:
+
+```r
+upset <- auto_ppi_upset_plot(
+  ppi_result,
+  methods = c("Degree", "MCC", "MNC", "DMNC", "EPC"),
+  top_n = 20,
+  output_dir = "STRING_PPI_analysis_results"
+)
+
+upset$intersection_summary
+```
+
 The first run downloads three STRING resource files:
 
 - `9606.protein.info.v12.0.txt.gz`
