@@ -3,10 +3,10 @@ Type: Package
 Title: Automated Machine Learning Feature Selection Workflow
 Version: 0.2.0
 Authors@R: c(
-    person("Xinyu", "Li", role = c("aut", "cre"), email = "your.email@example.com")
+    person("Xinyu", "Li", role = c("aut", "cre"), email = "lixinyu1033472712@gmail.com")
   )
 Author: Xinyu Li
-Maintainer: Xinyu Li <your.email@example.com>
+Maintainer: Xinyu Li <lixinyu1033472712@gmail.com>
 Description: Provides an automated machine learning workflow for feature
     selection and consensus visualization across multiple algorithms. The main
     entry point is auto_ml_analysis(), which accepts a feature matrix and group
