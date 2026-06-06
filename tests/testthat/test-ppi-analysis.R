@@ -66,8 +66,12 @@ test_that("auto_string_ppi_analysis builds local STRING edges and ranks hubs", {
 
   result <- auto_string_ppi_analysis(
     genes = c("TP53", "EGFR", "ALIAS_MYC"),
-    resource_dir = resource_dir,
+    resource_dir = file.path(tempdir(), "missing_standard_resource_dir"),
+    info_file = file.path(resource_dir, "9606.protein.info.v12.0.txt.gz"),
+    aliases_file = file.path(resource_dir, "9606.protein.aliases.v12.0.txt.gz"),
+    links_file = file.path(resource_dir, "9606.protein.links.v12.0.txt.gz"),
     output_dir = out_dir,
+    download_resources = FALSE,
     score_threshold = 400,
     top_n = 2,
     epc_n_sim = 5,

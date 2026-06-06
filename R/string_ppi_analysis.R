@@ -5,6 +5,9 @@ auto_string_ppi_analysis <- function(genes,
                                      output_dir = "STRING_PPI_analysis_results",
                                      species_id = "9606",
                                      string_version = "v12.0",
+                                     aliases_file = NULL,
+                                     info_file = NULL,
+                                     links_file = NULL,
                                      download_resources = TRUE,
                                      overwrite_resources = FALSE,
                                      score_threshold = 400,
@@ -50,6 +53,9 @@ auto_string_ppi_analysis <- function(genes,
     output_dir = output_dir,
     species_id = species_id,
     string_version = string_version,
+    aliases_file = aliases_file,
+    info_file = info_file,
+    links_file = links_file,
     download_resources = download_resources,
     overwrite_resources = overwrite_resources,
     score_threshold = score_threshold,
@@ -96,6 +102,7 @@ auto_string_ppi_analysis <- function(genes,
     list(
       genes = genes,
       resource_dir = normalizePath(resource_dir, mustWork = FALSE),
+      resource_files = string_result$resource_files,
       score_threshold = score_threshold,
       mapping = string_result$mapping,
       unmapped_genes = string_result$unmapped_genes,
@@ -116,6 +123,9 @@ string_build_gene_ppi_edges <- function(genes,
                                         output_dir = "STRING_PPI_analysis_results",
                                         species_id = "9606",
                                         string_version = "v12.0",
+                                        aliases_file = NULL,
+                                        info_file = NULL,
+                                        links_file = NULL,
                                         download_resources = TRUE,
                                         overwrite_resources = FALSE,
                                         score_threshold = 400,
@@ -135,6 +145,9 @@ string_build_gene_ppi_edges <- function(genes,
     resource_dir = resource_dir,
     species_id = species_id,
     string_version = string_version,
+    aliases_file = aliases_file,
+    info_file = info_file,
+    links_file = links_file,
     download_resources = download_resources,
     overwrite = overwrite_resources,
     verbose = verbose
@@ -258,6 +271,7 @@ string_build_gene_ppi_edges <- function(genes,
   }
 
   list(
+    resource_files = files,
     mapping = mapped,
     unmapped_genes = unmapped_genes,
     raw_string_interactions = ppi_raw,
@@ -317,9 +331,24 @@ download_string_resources <- function(resource_dir = "resource",
 string_resource_files <- function(resource_dir,
                                   species_id = "9606",
                                   string_version = "v12.0",
+                                  aliases_file = NULL,
+                                  info_file = NULL,
+                                  links_file = NULL,
                                   download_resources = TRUE,
                                   overwrite = FALSE,
                                   verbose = TRUE) {
+  manual_files <- string_manual_resource_files(
+    aliases_file = aliases_file,
+    info_file = info_file,
+    links_file = links_file
+  )
+  if (!is.null(manual_files)) {
+    if (verbose) {
+      message("Using manually specified local STRING resource files.")
+    }
+    return(manual_files)
+  }
+
   files <- string_resource_paths(resource_dir, species_id, string_version)
   missing <- names(files)[!file.exists(unlist(files, use.names = FALSE))]
 
@@ -342,6 +371,34 @@ string_resource_files <- function(resource_dir,
       "Missing STRING resource file(s): ",
       paste(sprintf("%s=%s", missing, unlist(files[missing], use.names = FALSE)), collapse = "; "),
       "\nRun download_string_resources(resource_dir = '", resource_dir, "', species_id = '", species_id, "') or set download_resources = TRUE.",
+      call. = FALSE
+    )
+  }
+  files
+}
+
+string_manual_resource_files <- function(aliases_file = NULL, info_file = NULL, links_file = NULL) {
+  supplied <- !vapply(list(aliases_file, info_file, links_file), is.null, logical(1))
+  if (!any(supplied)) {
+    return(NULL)
+  }
+  if (!all(supplied)) {
+    stop(
+      "When manually specifying STRING resource files, aliases_file, info_file, and links_file must all be provided.",
+      call. = FALSE
+    )
+  }
+
+  files <- list(
+    aliases = aliases_file,
+    info = info_file,
+    links = links_file
+  )
+  missing <- names(files)[!file.exists(unlist(files, use.names = FALSE))]
+  if (length(missing) > 0) {
+    stop(
+      "Manually specified STRING file(s) do not exist: ",
+      paste(sprintf("%s=%s", missing, unlist(files[missing], use.names = FALSE)), collapse = "; "),
       call. = FALSE
     )
   }

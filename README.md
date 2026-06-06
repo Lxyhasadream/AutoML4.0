@@ -130,6 +130,24 @@ download_string_resources(
 )
 ```
 
+If downloading inside R is slow or blocked, download the three STRING files by
+browser, server command line, or a shared local database, then pass their exact
+paths directly. In this manual-file mode, all three paths must be supplied and
+AutoML4R will not try to download anything:
+
+```r
+ppi_result <- auto_string_ppi_analysis(
+  genes = genes,
+  info_file = "/path/to/9606.protein.info.v12.0.txt.gz",
+  aliases_file = "/path/to/9606.protein.aliases.v12.0.txt.gz",
+  links_file = "/path/to/9606.protein.links.v12.0.txt.gz",
+  download_resources = FALSE,
+  output_dir = "STRING_PPI_analysis_results",
+  score_threshold = 400,
+  top_n = 10
+)
+```
+
 For other species, replace `species_id` with the STRING taxonomic identifier
 and use matching STRING resource files.
 

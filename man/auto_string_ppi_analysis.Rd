@@ -8,6 +8,9 @@ auto_string_ppi_analysis(
   output_dir = "STRING_PPI_analysis_results",
   species_id = "9606",
   string_version = "v12.0",
+  aliases_file = NULL,
+  info_file = NULL,
+  links_file = NULL,
   download_resources = TRUE,
   overwrite_resources = FALSE,
   score_threshold = 400,
@@ -31,6 +34,9 @@ auto_string_ppi_analysis(
 \item{output_dir}{Directory where mapping, edge, score, and hub result files are written.}
 \item{species_id}{STRING species identifier. The default is \code{"9606"} for human.}
 \item{string_version}{STRING file version suffix. The default is \code{"v12.0"}.}
+\item{aliases_file}{Optional full path to a local STRING protein aliases \code{.txt.gz} file.}
+\item{info_file}{Optional full path to a local STRING protein info \code{.txt.gz} file.}
+\item{links_file}{Optional full path to a local STRING protein links \code{.txt.gz} file.}
 \item{download_resources}{Whether to download missing STRING resource files automatically before analysis.}
 \item{overwrite_resources}{Whether to re-download and overwrite existing local STRING resource files.}
 \item{score_threshold}{Minimum STRING \code{combined_score} to keep. Typical values are 150, 400, 700, and 900.}
@@ -55,6 +61,12 @@ network. If the required STRING files are absent and \code{download_resources}
 is \code{TRUE}, the function downloads them into \code{resource_dir} first.
 The final downstream gene set is the strict intersection of genes appearing in
 the top-\code{n} lists from all 11 PPI topology algorithms.
+
+If downloading through R is slow or blocked, users may manually download the
+three STRING files and pass their exact locations through \code{aliases_file},
+\code{info_file}, and \code{links_file}. When any manual file path is supplied,
+all three file paths must be supplied, and \code{resource_dir} lookup/download is
+skipped.
 }
 \details{
 For a new user, the intended workflow is:
@@ -93,5 +105,14 @@ res <- auto_string_ppi_analysis(
 res$edge_df
 res$ppi$hub_frequency
 res$downstream_genes
+
+# Manual local-file mode for users who downloaded STRING files separately.
+res2 <- auto_string_ppi_analysis(
+  genes,
+  info_file = "/path/to/9606.protein.info.v12.0.txt.gz",
+  aliases_file = "/path/to/9606.protein.aliases.v12.0.txt.gz",
+  links_file = "/path/to/9606.protein.links.v12.0.txt.gz",
+  download_resources = FALSE
+)
 }
 }

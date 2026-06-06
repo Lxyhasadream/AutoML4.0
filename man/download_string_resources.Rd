@@ -26,6 +26,11 @@ protein links. Users can run this once before PPI analysis, or rely on
 \code{auto_string_ppi_analysis(download_resources = TRUE)} to download missing
 files automatically.
 }
+\details{
+If network speed is poor inside R, users can download the same three files by
+other means and pass their paths directly to \code{\link{auto_string_ppi_analysis}}
+through \code{info_file}, \code{aliases_file}, and \code{links_file}.
+}
 \value{
 Invisibly returns a named list of local file paths.
 }
