@@ -5,6 +5,8 @@ auto_string_ppi_analysis <- function(genes,
                                      output_dir = "STRING_PPI_analysis_results",
                                      species_id = "9606",
                                      string_version = "v12.0",
+                                     download_resources = TRUE,
+                                     overwrite_resources = FALSE,
                                      score_threshold = 400,
                                      top_n = 10,
                                      consensus_min_methods = NULL,
@@ -48,6 +50,8 @@ auto_string_ppi_analysis <- function(genes,
     output_dir = output_dir,
     species_id = species_id,
     string_version = string_version,
+    download_resources = download_resources,
+    overwrite_resources = overwrite_resources,
     score_threshold = score_threshold,
     alias_chunk_size = alias_chunk_size,
     links_chunk_size = links_chunk_size,
@@ -72,6 +76,22 @@ auto_string_ppi_analysis <- function(genes,
     verbose = verbose
   )
 
+  strict_intersection_genes <- sort(unique(Reduce(intersect, hub_result$top_nodes)))
+  consensus_hub_genes <- sort(unique(hub_result$consensus_hubs$Node))
+
+  if (write_outputs) {
+    utils::write.csv(
+      data.frame(gene = strict_intersection_genes, stringsAsFactors = FALSE),
+      file.path(output_dir, paste0("STRING_PPI_top", top_n, "_intersection_all_11_methods.csv")),
+      row.names = FALSE
+    )
+    utils::write.csv(
+      data.frame(gene = consensus_hub_genes, stringsAsFactors = FALSE),
+      file.path(output_dir, "STRING_PPI_consensus_hub_genes.csv"),
+      row.names = FALSE
+    )
+  }
+
   structure(
     list(
       genes = genes,
@@ -82,6 +102,9 @@ auto_string_ppi_analysis <- function(genes,
       raw_string_interactions = string_result$raw_string_interactions,
       edge_df = string_result$edge_df,
       ppi = hub_result,
+      intersection_genes_all_11_methods = strict_intersection_genes,
+      consensus_hub_genes = consensus_hub_genes,
+      downstream_genes = strict_intersection_genes,
       output_dir = if (write_outputs || plot_outputs) normalizePath(output_dir, mustWork = FALSE) else NA_character_
     ),
     class = "auto_string_ppi_analysis"
@@ -93,6 +116,8 @@ string_build_gene_ppi_edges <- function(genes,
                                         output_dir = "STRING_PPI_analysis_results",
                                         species_id = "9606",
                                         string_version = "v12.0",
+                                        download_resources = TRUE,
+                                        overwrite_resources = FALSE,
                                         score_threshold = 400,
                                         alias_chunk_size = 300000,
                                         links_chunk_size = 500000,
@@ -106,7 +131,14 @@ string_build_gene_ppi_edges <- function(genes,
     stop("genes must contain at least one non-empty gene symbol.", call. = FALSE)
   }
 
-  files <- string_resource_files(resource_dir, species_id, string_version)
+  files <- string_resource_files(
+    resource_dir = resource_dir,
+    species_id = species_id,
+    string_version = string_version,
+    download_resources = download_resources,
+    overwrite = overwrite_resources,
+    verbose = verbose
+  )
   if (write_outputs) {
     dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
   }
@@ -233,21 +265,111 @@ string_build_gene_ppi_edges <- function(genes,
   )
 }
 
-string_resource_files <- function(resource_dir, species_id = "9606", string_version = "v12.0") {
-  files <- list(
-    aliases = file.path(resource_dir, paste0(species_id, ".protein.aliases.", string_version, ".txt.gz")),
-    info = file.path(resource_dir, paste0(species_id, ".protein.info.", string_version, ".txt.gz")),
-    links = file.path(resource_dir, paste0(species_id, ".protein.links.", string_version, ".txt.gz"))
-  )
+download_string_resources <- function(resource_dir = "resource",
+                                      species_id = "9606",
+                                      string_version = "v12.0",
+                                      overwrite = FALSE,
+                                      timeout = 600,
+                                      verbose = TRUE) {
+  dir.create(resource_dir, showWarnings = FALSE, recursive = TRUE)
+  files <- string_resource_paths(resource_dir, species_id, string_version)
+  urls <- string_resource_urls(species_id, string_version)
+
+  old_timeout <- getOption("timeout")
+  options(timeout = max(timeout, old_timeout))
+  on.exit(options(timeout = old_timeout), add = TRUE)
+
+  for (nm in names(files)) {
+    if (file.exists(files[[nm]]) && !overwrite) {
+      if (verbose) {
+        message("STRING resource exists: ", files[[nm]])
+      }
+      next
+    }
+    if (verbose) {
+      message("Downloading STRING ", nm, " resource from: ", urls[[nm]])
+    }
+    status <- tryCatch(
+      utils::download.file(
+        url = urls[[nm]],
+        destfile = files[[nm]],
+        mode = "wb",
+        quiet = !verbose
+      ),
+      error = function(e) {
+        if (file.exists(files[[nm]])) {
+          unlink(files[[nm]])
+        }
+        stop("Failed to download STRING resource: ", urls[[nm]], "\n", conditionMessage(e), call. = FALSE)
+      }
+    )
+    if (!identical(status, 0L) || !file.exists(files[[nm]])) {
+      if (file.exists(files[[nm]])) {
+        unlink(files[[nm]])
+      }
+      stop("Failed to download STRING resource: ", urls[[nm]], call. = FALSE)
+    }
+  }
+
+  invisible(files)
+}
+
+string_resource_files <- function(resource_dir,
+                                  species_id = "9606",
+                                  string_version = "v12.0",
+                                  download_resources = TRUE,
+                                  overwrite = FALSE,
+                                  verbose = TRUE) {
+  files <- string_resource_paths(resource_dir, species_id, string_version)
+  missing <- names(files)[!file.exists(unlist(files, use.names = FALSE))]
+
+  if (length(missing) > 0 && download_resources) {
+    if (verbose) {
+      message("Missing STRING resource file(s); downloading required files.")
+    }
+    download_string_resources(
+      resource_dir = resource_dir,
+      species_id = species_id,
+      string_version = string_version,
+      overwrite = overwrite,
+      verbose = verbose
+    )
+  }
+
   missing <- names(files)[!file.exists(unlist(files, use.names = FALSE))]
   if (length(missing) > 0) {
     stop(
       "Missing STRING resource file(s): ",
       paste(sprintf("%s=%s", missing, unlist(files[missing], use.names = FALSE)), collapse = "; "),
+      "\nRun download_string_resources(resource_dir = '", resource_dir, "', species_id = '", species_id, "') or set download_resources = TRUE.",
       call. = FALSE
     )
   }
   files
+}
+
+string_resource_paths <- function(resource_dir, species_id = "9606", string_version = "v12.0") {
+  files <- list(
+    aliases = file.path(resource_dir, paste0(species_id, ".protein.aliases.", string_version, ".txt.gz")),
+    info = file.path(resource_dir, paste0(species_id, ".protein.info.", string_version, ".txt.gz")),
+    links = file.path(resource_dir, paste0(species_id, ".protein.links.", string_version, ".txt.gz"))
+  )
+  files
+}
+
+string_resource_urls <- function(species_id = "9606", string_version = "v12.0") {
+  file_stems <- c(
+    aliases = "protein.aliases",
+    info = "protein.info",
+    links = "protein.links"
+  )
+  stats::setNames(
+    vapply(file_stems, function(stem) {
+      file_name <- paste0(species_id, ".", stem, ".", string_version, ".txt.gz")
+      paste0("https://stringdb-downloads.org/download/", stem, ".", string_version, "/", file_name)
+    }, character(1)),
+    names(file_stems)
+  )
 }
 
 string_standardize_id_col <- function(dt) {

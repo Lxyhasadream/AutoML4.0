@@ -36,7 +36,7 @@ auto_ppi_analysis(
 \item{verbose}{Whether to print network summary messages.}
 }
 \description{
-Ranks PPI network nodes using 11 cytoHubba-style topology algorithms and writes hub-screening tables, consensus hub summaries, intersection tables, and publication-oriented PPI figures.
+Ranks PPI network nodes using 11 cytoHubba-style topology algorithms and writes hub-screening tables, consensus hub summaries, intersection tables, and publication-oriented PPI figures. This is the lower-level PPI entry point for users who already have a PPI edge table. Users who only have a gene set should usually call \code{\link{auto_string_ppi_analysis}} instead.
 }
 \details{
 The implemented algorithms are Degree, MNC, DMNC, MCC, BottleNeck, EcCentricity, Closeness, Radiality, Betweenness, Stress, and EPC, following the formulas described in the cytoHubba paper. The network is treated as an undirected simple graph; duplicate edges and self-loops are removed.

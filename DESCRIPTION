@@ -7,13 +7,16 @@ Authors@R: c(
   )
 Author: Xinyu Li
 Maintainer: Xinyu Li <lixinyu1033472712@gmail.com>
-Description: Provides an automated machine learning workflow for feature
-    selection and consensus visualization across multiple algorithms. The main
-    entry point is auto_ml_analysis(), which accepts a feature matrix and group
-    labels, writes model outputs, and saves feature-selection results. The
-    automl4r_beautiful_plots() function generates publication-oriented
-    per-algorithm selected-gene plots, diagnostic figures, expression plots,
-    and Nature-style consensus voting figures.
+Description: Provides automated machine learning workflows for feature
+    selection, consensus visualization, and protein-protein interaction (PPI)
+    hub screening. The auto_ml_analysis() entry point accepts a feature matrix
+    and group labels, writes model outputs, and saves feature-selection results.
+    The auto_string_ppi_analysis() entry point accepts a gene set, downloads
+    required STRING resources when needed, builds a STRING-derived PPI network,
+    runs 11 cytoHubba-style topology algorithms, and returns the downstream
+    intersection hub genes. The automl4r_beautiful_plots() function generates
+    publication-oriented per-algorithm selected-gene plots, diagnostic figures,
+    expression plots, and Nature-style consensus voting figures.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

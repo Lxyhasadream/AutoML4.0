@@ -74,13 +74,80 @@ Key output files include:
 - `NatureStyle_Algorithm_selected_gene_count_class_size_ordered_largefont.pdf/.png`
 - `NatureStyle_algorithm_selected_gene_plots/<method>/`
 
-## PPI Hub Screening
+## PPI Module: Gene Set to STRING Network to Hub Genes
 
-AutoML4R also provides cytoHubba-style PPI hub screening with 11 topology
-algorithms from the cytoHubba paper:
+AutoML4R provides two PPI entry points.
+
+The recommended entry point for most users is `auto_string_ppi_analysis()`.
+The input is only a gene-symbol vector. If the local STRING database files are
+not present, AutoML4R downloads the required STRING v12.0 human files into
+`resource/`, then maps genes to STRING protein IDs, extracts the query-query
+network, runs 11 cytoHubba-style topology algorithms, and returns the strict
+intersection of the top genes across all 11 methods.
 
 ```r
-ppi_result <- auto_ppi_analysis(
+library(AutoML4R)
+
+genes <- c(
+  "SERPINE1", "PF4", "HMOX1", "PPBP", "UCP2",
+  "CXCR4", "HBB", "PTGS1", "GPX1", "HK2",
+  "GZMB", "PRF1", "PRRT2"
+)
+
+ppi_result <- auto_string_ppi_analysis(
+  genes = genes,
+  resource_dir = "resource",
+  output_dir = "STRING_PPI_analysis_results",
+  species_id = "9606",
+  score_threshold = 400,
+  top_n = 10,
+  download_resources = TRUE
+)
+
+# Gene-level STRING network used for topology analysis
+ppi_result$edge_df
+
+# Strict intersection of top-10 genes across all 11 algorithms
+ppi_result$downstream_genes
+
+# Broader consensus genes based on consensus_min_methods
+ppi_result$consensus_hub_genes
+```
+
+The first run downloads three STRING resource files:
+
+- `9606.protein.info.v12.0.txt.gz`
+- `9606.protein.aliases.v12.0.txt.gz`
+- `9606.protein.links.v12.0.txt.gz`
+
+You can also download them explicitly before analysis:
+
+```r
+download_string_resources(
+  resource_dir = "resource",
+  species_id = "9606",
+  string_version = "v12.0"
+)
+```
+
+For other species, replace `species_id` with the STRING taxonomic identifier
+and use matching STRING resource files.
+
+The one-click STRING PPI workflow writes:
+
+- `STRING_offline_mapped_genes.csv`
+- `STRING_offline_unmapped_genes.csv`
+- `STRING_offline_raw_query_interactions.csv`
+- `STRING_offline_edge_df_for_cytohubba.csv`
+- `STRING_PPI_top<n>_intersection_all_11_methods.csv`
+- `STRING_PPI_consensus_hub_genes.csv`
+- all downstream 11-method PPI tables and figures from `auto_ppi_analysis()`
+
+The lower-level entry point is `auto_ppi_analysis()`. Use it only when you
+already have a PPI edge table:
+
+```r
+hub_result <- auto_ppi_analysis(
   edge_df = ppi_edges,
   from_col = "source",
   to_col = "target",
@@ -106,6 +173,12 @@ The PPI workflow writes:
 - algorithm intersection tables from 2 to 11 methods
 - PPI figures under `figures/`, including hub-frequency barplot,
   normalized 11-method score heatmap, and consensus-hub network plot
+
+The 11 PPI topology algorithms are Degree, MNC, DMNC, MCC, BottleNeck,
+EcCentricity, Closeness, Radiality, Betweenness, Stress, and EPC. The
+`auto_string_ppi_analysis()` object stores the full `auto_ppi_analysis()` result
+under `ppi_result$ppi`, so advanced users can inspect per-method rankings,
+intersection tables, integrated rank, and figures.
 
 Default methods currently include 25 feature-selection algorithms or algorithm variants:
 

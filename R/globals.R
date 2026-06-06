@@ -7,6 +7,7 @@ utils::globalVariables(c(
   "Variables",
   "expression",
   "feature",
+  "gene",
   "gene_input",
   "geneA",
   "geneB",

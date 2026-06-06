@@ -1,6 +1,7 @@
 export(auto_ml_analysis)
 export(auto_ppi_analysis)
 export(auto_string_ppi_analysis)
+export(download_string_resources)
 export(aml_methods)
 export(automl4r_beautiful_plots)
 export(ppi_methods)

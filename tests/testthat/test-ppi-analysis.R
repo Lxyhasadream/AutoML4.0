@@ -80,5 +80,7 @@ test_that("auto_string_ppi_analysis builds local STRING edges and ranks hubs", {
   expect_s3_class(result$ppi, "auto_ppi_analysis")
   expect_equal(nrow(result$edge_df), 2)
   expect_true("ALIAS_MYC" %in% result$mapping$gene_input)
+  expect_equal(result$downstream_genes, result$intersection_genes_all_11_methods)
+  expect_true(file.exists(file.path(out_dir, "STRING_PPI_top2_intersection_all_11_methods.csv")))
   expect_true(file.exists(file.path(out_dir, "STRING_offline_edge_df_for_cytohubba.csv")))
 })
