@@ -28,11 +28,15 @@ auto_ml_analysis(
 \description{
 Runs a multi-algorithm binary-classification feature-selection workflow and writes selected genes, method rankings, consensus votes, and figures to disk.
 }
+\details{
+Use \code{automl4r_beautiful_plots()} after this function to generate the full publication-style plotting layer, including per-algorithm selected-gene plots, selected-gene expression plots, model-specific diagnostic plots, and the final Nature-style consensus voting overview.
+}
 \value{
 An \code{auto_ml_analysis} object containing selected genes by method, per-method rankings, consensus votes, failed methods, the positive class, and the output directory.
 }
 \examples{
 \dontrun{
-auto_ml_analysis(hub_data, group, output_dir = "ML_screening_results", positive_class = "Disease")
+result <- auto_ml_analysis(hub_data, group, output_dir = "ML_screening_results", positive_class = "Disease")
+automl4r_beautiful_plots(result, hub_data = hub_data, group = group, positive_class = "Disease")
 }
 }

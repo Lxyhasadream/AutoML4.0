@@ -28,15 +28,51 @@ result <- auto_ml_analysis(
 
 `hub_data` should be a data frame or matrix with samples in rows and features in columns. `group` should contain one binary class label per sample.
 
-The workflow writes:
+The main workflow writes:
 
 - `feature_rankings_by_method.csv`
 - `consensus_feature_votes.csv`
 - one selected-gene TXT file per method
-- consensus vote and method-support figures
+- basic consensus vote and method-support figures
 - per-algorithm plots under `algorithm_plots/`, including ranking plots,
   glmnet CV/path plots, random-forest OOB/importance plots, Boruta history
   plots, boosting importance plots, and LightGBM SHAP summaries
+
+## Publication-Style Plots
+
+After feature selection, run `automl4r_beautiful_plots()` to generate the
+full set of publication-oriented figures:
+
+```r
+beautiful <- automl4r_beautiful_plots(
+  result,
+  hub_data = hub_data,
+  group = group,
+  positive_class = "Disease"
+)
+```
+
+This writes additional figures to `output_dir`, including:
+
+- a Nature-style final consensus voting overview
+- consensus vote lollipop plot
+- method-by-gene consensus heatmap grouped by algorithm class
+- algorithm selected-gene count plot
+- one selected-gene score plot per algorithm
+- one selected-gene expression violin/boxplot per algorithm
+- algorithm-specific diagnostic plots where model objects support them,
+  including LASSO/Ridge/ElasticNet CV and coefficient-path plots,
+  random-forest OOB and importance plots, and model-specific ranking plots
+  for tree, boosting, kernel, information, latent-variable, and heuristic
+  search methods
+
+Key output files include:
+
+- `NatureStyle_Consensus_feature_selection_overview_FINAL_largefont.pdf`
+- `NatureStyle_Consensus_gene_vote_lollipop_largefont.pdf/.png`
+- `NatureStyle_Method_gene_consensus_heatmap_class_size_ordered_largefont.pdf/.png`
+- `NatureStyle_Algorithm_selected_gene_count_class_size_ordered_largefont.pdf/.png`
+- `NatureStyle_algorithm_selected_gene_plots/<method>/`
 
 Default methods currently include 25 feature-selection algorithms or algorithm variants:
 
@@ -48,6 +84,12 @@ For a runnable simulated-data test:
 
 ```sh
 Rscript inst/examples/smoke_test.R
+```
+
+For a full all-method plot test:
+
+```sh
+Rscript inst/examples/full_methods_test.R
 ```
 
 ## GitHub Upload

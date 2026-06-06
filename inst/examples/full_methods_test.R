@@ -31,3 +31,28 @@ print(head(result$consensus, 10))
 
 stopifnot(length(result$selected_genes) == length(aml_methods()))
 stopifnot(length(result$failures) == 0)
+
+beautiful <- automl4r_beautiful_plots(
+  result,
+  hub_data = hub_data,
+  group = group,
+  positive_class = "Disease",
+  top_n_vote = 30,
+  heatmap_top_n = 40,
+  top_n_per_method = 20,
+  expression_top_n_per_method = 12
+)
+
+stopifnot(file.exists(file.path(
+  result$output_dir,
+  "NatureStyle_Consensus_feature_selection_overview_FINAL_largefont.pdf"
+)))
+
+method_plot_dirs <- file.path(
+  result$output_dir,
+  "NatureStyle_algorithm_selected_gene_plots",
+  names(result$selected_genes)
+)
+stopifnot(all(dir.exists(method_plot_dirs)))
+
+invisible(beautiful)

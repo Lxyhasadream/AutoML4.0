@@ -4,4 +4,18 @@ library(AutoML4R)
 # hub_data <- read.table("hub_data.txt", header = TRUE, row.names = 1, sep = "\t")
 # group <- read.table("group.txt", header = TRUE, sep = "\t")$group
 #
-# auto_ml_analysis(hub_data, group, output_dir = "ML_screening_results")
+# result <- auto_ml_analysis(
+#   hub_data = hub_data,
+#   group = group,
+#   positive_class = "Disease",
+#   output_dir = "ML_screening_results",
+#   methods = aml_methods(),
+#   top_n = 20
+# )
+#
+# automl4r_beautiful_plots(
+#   result,
+#   hub_data = hub_data,
+#   group = group,
+#   positive_class = "Disease"
+# )

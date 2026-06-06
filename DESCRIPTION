@@ -10,7 +10,10 @@ Maintainer: Xinyu Li <your.email@example.com>
 Description: Provides an automated machine learning workflow for feature
     selection and consensus visualization across multiple algorithms. The main
     entry point is auto_ml_analysis(), which accepts a feature matrix and group
-    labels, writes model outputs, and saves publication-oriented figures.
+    labels, writes model outputs, and saves feature-selection results. The
+    automl4r_beautiful_plots() function generates publication-oriented
+    per-algorithm selected-gene plots, diagnostic figures, expression plots,
+    and Nature-style consensus voting figures.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
